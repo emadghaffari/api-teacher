@@ -26,14 +26,6 @@ type sredis struct {
 	db *sql.DB
 }
 
-const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "your-password"
-	dbname   = "calhounio_demo"
-)
-
 func (s *sredis) New() {
 	once.Do(func() {
 		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
