@@ -10,3 +10,6 @@ postgres:
   password: postgres
   dbname: postgres
   sslmode: disable
+gin:
+  mode: debug
+  port: ":8000"
