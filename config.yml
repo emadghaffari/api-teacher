@@ -3,3 +3,10 @@ redis:
   Addr: redis:6379
   Password: password
   DB: 0
+postgres:
+  host: db
+  port: 5432
+  user: postgres
+  password: postgres
+  dbname: postgres
+  sslmode: disable

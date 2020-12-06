@@ -11,8 +11,8 @@ import (
 var (
 	once sync.Once
 
-	// RedisDB variable
-	RedisDB iredis = &sredis{}
+	// DB variable
+	DB iredis = &sredis{}
 )
 
 type iredis interface {

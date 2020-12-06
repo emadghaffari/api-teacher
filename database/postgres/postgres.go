@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"fmt"
 	"sync"
+
+	_ "github.com/lib/pq"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -33,11 +36,21 @@ const (
 func (s *sredis) New() {
 	once.Do(func() {
 		psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
-			"password=%s dbname=%s sslmode=disable",
-			host, port, user, password, dbname)
+			"password=%s dbname=%s sslmode=%s",
+			viper.GetString("postgres.host"),
+			viper.GetInt("postgres.port"),
+			viper.GetString("postgres.user"),
+			viper.GetString("postgres.password"),
+			viper.GetString("postgres.dbname"),
+			viper.GetString("postgres.sslmode"))
 
 		var err error
 		s.db, err = sql.Open("postgres", psqlInfo)
+		if err != nil {
+			panic(err)
+		}
+
+		err = s.db.Ping()
 		if err != nil {
 			panic(err)
 		}
