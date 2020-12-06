@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -47,12 +48,16 @@ func (s *sredis) New() {
 		var err error
 		s.db, err = sql.Open("postgres", psqlInfo)
 		if err != nil {
-			panic(err)
+			log.WithFields(log.Fields{
+				"error": fmt.Sprintf("Config database Error: %s", err),
+			}).Fatal(fmt.Sprintf("Config database Error: %s", err))
 		}
 
 		err = s.db.Ping()
 		if err != nil {
-			panic(err)
+			log.WithFields(log.Fields{
+				"error": fmt.Sprintf("Config ping database Error: %s", err),
+			}).Fatal(fmt.Sprintf("Config ping database Error: %s", err))
 		}
 
 		fmt.Println("postgres connected")
