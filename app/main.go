@@ -1,6 +1,7 @@
 package app
 
 import (
+	"github.com/emadghaffari/api-teacher/app/http/router"
 	"github.com/emadghaffari/api-teacher/database/postgres"
 	"github.com/emadghaffari/api-teacher/database/redis"
 )
@@ -10,4 +11,5 @@ import (
 func StartApplication() {
 	defer postgres.DB.GetDB().Close()
 	defer redis.DB.GetDB().Close()
+	router.Map()
 }
