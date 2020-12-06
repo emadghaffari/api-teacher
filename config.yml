@@ -1,1 +1,5 @@
 Environment: production
+redis:
+  Addr: redis:6379
+  Password: password
+  DB: 0
