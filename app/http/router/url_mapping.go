@@ -16,6 +16,9 @@ func init() {
 
 // Map all routes
 func Map() {
+	user()
+	course()
+	student()
 	teacher()
 
 	// map all urls
