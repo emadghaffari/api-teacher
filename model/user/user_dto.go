@@ -15,11 +15,11 @@ type User struct {
 	Identitiy string `json:"identitiy"`
 	CreatedAt string `json:"created_at"`
 	Password  string `json:"_"`
-	Role      role
+	Role      Role
 }
 
 // Roles: teacher, student
-type role struct {
+type Role struct {
 	RoleID int64  `json:"id"`
 	Name   string `json:"name"`
 }
