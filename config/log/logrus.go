@@ -26,7 +26,7 @@ func (l logrusStruct) New() {
 	once.Do(func() {
 		if viper.GetString("Environment") == "production" {
 			// Log as JSON instead of the default ASCII formatter.
-			f, _ := os.OpenFile(fmt.Sprintf("logs/%s.log", time.Now().Local().Format("2006-01-02")), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0644)
+			f, _ := os.OpenFile(fmt.Sprintf("logs/%s.log", time.Now().Local().Format("2006-01-02")), os.O_CREATE|os.O_APPEND|os.O_RDWR, 0777)
 			log.SetFormatter(&log.JSONFormatter{})
 			log.SetOutput(f)
 
