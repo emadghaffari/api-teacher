@@ -15,7 +15,6 @@ type Course struct {
 	Identitiy string `json:"identitiy"`
 	Valence   uint32 `json:"valence"`
 	Time      string `json:"time"`
-	CreatedAt string `json:"created_at"`
 }
 
 // Courses list of Course

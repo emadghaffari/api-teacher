@@ -20,3 +20,9 @@ migrate-reset: ## reset database and re-run all migrations
 	@$(MIGRATE) drop
 	@echo "Running all database migrations..."
 	@$(MIGRATE) up
+
+
+.PHONY: seed
+seed: ## run all new database migrations
+	@echo "seeding database..."
+	go run ./database/postgres/seed/seeder.go

@@ -9,4 +9,4 @@ migrate DB with https://github.com/golang-migrate/migrate
 migrate DB with (make migrate)
 
 # seed
-seed teacher, student to roles table
+seed teacher, student to roles table (make seed)
