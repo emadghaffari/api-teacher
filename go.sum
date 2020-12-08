@@ -92,6 +92,8 @@ github.com/docker/docker v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompati
 github.com/docker/go-connections v0.4.0/go.mod h1:Gbd7IOopHjR8Iph03tsViu4nIes5XhDvyHbTtUxmeec=
 github.com/docker/go-units v0.4.0/go.mod h1:fgPhTUdO+D/Jk86RDLlptpiXQzgHJF7gydDDbaIK4Dk=
 github.com/edsrzf/mmap-go v0.0.0-20170320065105-0bce6a688712/go.mod h1:YO35OhQPt3KJa3ryjFM5Bs14WD66h8eGKpfaBNrHW5M=
+github.com/emadghaffari/res_errors v0.0.0-20201020135514-1b9d3f287aa0 h1:y+guSlw8Ujzbn6BkxvKe/HegIeK1FEH3kWgCdHf+XcM=
+github.com/emadghaffari/res_errors v0.0.0-20201020135514-1b9d3f287aa0/go.mod h1:LP3OBIZFpF4SoMcdGOvA2o008+rGNxewFzSpx7e2j5c=
 github.com/envoyproxy/go-control-plane v0.9.0/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.1-0.20191026205805-5f8ba28d4473/go.mod h1:YTl/9mNaCwkRvm6d1a2C3ymFceY/DCBVvsKhRF0iEA4=
 github.com/envoyproxy/go-control-plane v0.9.4/go.mod h1:6rpuAdCZL397s3pYoYcLgu1mIlRU8Am5FuJP05cCM98=

@@ -10,7 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/emadghaffari/api-teacher/database/redis"
-	"github.com/emadghaffari/api-teacher/model/user"
+	model "github.com/emadghaffari/api-teacher/model/user"
 	"github.com/emadghaffari/api-teacher/utils/hash"
 	"github.com/spf13/viper"
 )
@@ -21,12 +21,12 @@ var (
 )
 
 type intef interface {
-	Generate(user user.User) (*TokenDetails, error)
+	Generate(user model.User) (*TokenDetails, error)
 	VerifyToken(string) (*AccessDetails, error)
 }
 type wt struct{}
 
-func (j *wt) Generate(user user.User) (*TokenDetails, error) {
+func (j *wt) Generate(user model.User) (*TokenDetails, error) {
 
 	td, err := j.genJWT()
 	if err != nil {
@@ -121,11 +121,19 @@ func (j *wt) genRefJWT(td *TokenDetails) error {
 	return nil
 }
 
-func (j *wt) redis(user user.User, td *TokenDetails) error {
+func (j *wt) redis(user model.User, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
-	bt, err := json.Marshal(user)
+
+	// make map for store in redis
+	us := make(map[string]string, 4)
+	us["identitiy"] = user.Identitiy
+	us["first_name"] = user.FirstName
+	us["last_name"] = user.LastName
+	us["role"] = user.Role.Name
+
+	bt, err := json.Marshal(us)
 	if err != nil {
 		log.WithFields(log.Fields{
 			"user": user,
