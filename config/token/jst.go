@@ -1,0 +1,152 @@
+package token
+
+import (
+	"context"
+	"fmt"
+	"strconv"
+	"time"
+
+	log "github.com/sirupsen/logrus"
+
+	"github.com/dgrijalva/jwt-go"
+	"github.com/emadghaffari/api-teacher/database/redis"
+	"github.com/emadghaffari/api-teacher/utils/hash"
+	"github.com/spf13/viper"
+)
+
+var (
+	// Conf variable instance of intef
+	Conf intef = &wt{}
+)
+
+type intef interface {
+	Generate(user int64) (*TokenDetails, error)
+	VerifyToken(string) (*AccessDetails, error)
+}
+type wt struct{}
+
+func (j *wt) Generate(user int64) (*TokenDetails, error) {
+
+	td, err := j.genJWT(user)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := j.genRefJWT(user, td); err != nil {
+		return nil, err
+	}
+
+	if err := j.redis(user, td); err != nil {
+		return nil, err
+	}
+
+	return td, nil
+}
+
+func (j *wt) VerifyToken(request string) (*AccessDetails, error) {
+	token, err := jwt.Parse(request, func(token *jwt.Token) (interface{}, error) {
+		//Make sure that the token method conform to "SigningMethodHMAC"
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(viper.GetString("jwt.secret")), nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if _, ok := token.Claims.(jwt.Claims); !ok && !token.Valid {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		AccessUUID, ok := claims["uuid"].(string)
+		if !ok {
+			return nil, fmt.Errorf("Error in claims uuid from client")
+		}
+
+		UserID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["id"]), 10, 64)
+		if err != nil {
+			return nil, err
+		}
+
+		return &AccessDetails{
+			AccessUUID: AccessUUID,
+			UserID:     UserID,
+		}, nil
+	}
+	return nil, err
+}
+
+func (j *wt) genJWT(user int64) (*TokenDetails, error) {
+	secret := viper.GetString("jwt.secret")
+
+	// create new TokenDetails
+	td := &TokenDetails{}
+	td.AtExpires = time.Now().Add(time.Duration(time.Minute * viper.GetDuration("jwt.expire"))).Unix()
+	td.RtExpires = time.Now().Add(time.Duration(time.Minute * viper.GetDuration("jwt.RTexpire"))).Unix()
+	td.AccessUUID = hash.Generate(30)
+	td.RefreshUUID = hash.Generate(60)
+
+	// New MapClaims for access token
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["uuid"] = td.AccessUUID
+	atClaims["exp"] = td.AtExpires
+	atClaims["id"] = user
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+
+	var err error
+	td.AccessToken, err = at.SignedString([]byte(secret))
+	if err != nil {
+		log.WithFields(log.Fields{
+			"user_id": user,
+		}).Warn(fmt.Sprintf("Error in Generate JWT: %s", err))
+		return nil, err
+	}
+	return td, nil
+}
+
+func (j *wt) genRefJWT(user int64, td *TokenDetails) error {
+	secret := viper.GetString("jwt.refSecret")
+
+	// New MapClaims for refresh access token
+	rtClaims := jwt.MapClaims{}
+	rtClaims["uuid"] = td.RefreshUUID
+	rtClaims["id"] = user
+	rtClaims["exp"] = td.RtExpires
+	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
+
+	var err error
+	td.RefreshToken, err = rt.SignedString([]byte(secret))
+	if err != nil {
+		log.WithFields(log.Fields{
+			"user_id": user,
+		}).Warn(fmt.Sprintf("Error in Generate RefJWT: %s", err))
+		return err
+	}
+	return nil
+}
+
+func (j *wt) redis(id int64, td *TokenDetails) error {
+	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
+	rt := time.Unix(td.RtExpires, 0)
+	now := time.Now()
+	if err := redis.DB.GetDB().Set(context.Background(), td.AccessUUID, strconv.Itoa(int(id)), at.Sub(now)).Err(); err != nil {
+		log.WithFields(log.Fields{
+			"user_id":      id,
+			"access_token": td.AccessToken,
+		}).Warn(fmt.Sprintf("Error in Store JWT in Redis: %s", err))
+		return err
+	}
+
+	if err := redis.DB.GetDB().Set(context.Background(), td.RefreshUUID, strconv.Itoa(int(id)), rt.Sub(now)).Err(); err != nil {
+		log.WithFields(log.Fields{
+			"user_id":      id,
+			"access_token": td.AccessToken,
+			"ref_token":    td.RefreshToken,
+		}).Warn(fmt.Sprintf("Error in Store RefJWT in Redis: %s", err))
+		return err
+	}
+	return nil
+}
