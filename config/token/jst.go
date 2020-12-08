@@ -2,14 +2,15 @@ package token
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"strconv"
 	"time"
 
 	log "github.com/sirupsen/logrus"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/emadghaffari/api-teacher/database/redis"
+	"github.com/emadghaffari/api-teacher/model/user"
 	"github.com/emadghaffari/api-teacher/utils/hash"
 	"github.com/spf13/viper"
 )
@@ -20,19 +21,19 @@ var (
 )
 
 type intef interface {
-	Generate(user int64) (*TokenDetails, error)
+	Generate(user user.User) (*TokenDetails, error)
 	VerifyToken(string) (*AccessDetails, error)
 }
 type wt struct{}
 
-func (j *wt) Generate(user int64) (*TokenDetails, error) {
+func (j *wt) Generate(user user.User) (*TokenDetails, error) {
 
-	td, err := j.genJWT(user)
+	td, err := j.genJWT()
 	if err != nil {
 		return nil, err
 	}
 
-	if err := j.genRefJWT(user, td); err != nil {
+	if err := j.genRefJWT(td); err != nil {
 		return nil, err
 	}
 
@@ -65,20 +66,14 @@ func (j *wt) VerifyToken(request string) (*AccessDetails, error) {
 			return nil, fmt.Errorf("Error in claims uuid from client")
 		}
 
-		UserID, err := strconv.ParseUint(fmt.Sprintf("%.f", claims["id"]), 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
 		return &AccessDetails{
 			AccessUUID: AccessUUID,
-			UserID:     UserID,
 		}, nil
 	}
 	return nil, err
 }
 
-func (j *wt) genJWT(user int64) (*TokenDetails, error) {
+func (j *wt) genJWT() (*TokenDetails, error) {
 	secret := viper.GetString("jwt.secret")
 
 	// create new TokenDetails
@@ -93,27 +88,25 @@ func (j *wt) genJWT(user int64) (*TokenDetails, error) {
 	atClaims["authorized"] = true
 	atClaims["uuid"] = td.AccessUUID
 	atClaims["exp"] = td.AtExpires
-	atClaims["id"] = user
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 
 	var err error
 	td.AccessToken, err = at.SignedString([]byte(secret))
 	if err != nil {
 		log.WithFields(log.Fields{
-			"user_id": user,
+			"uuid": td.AccessUUID,
 		}).Warn(fmt.Sprintf("Error in Generate JWT: %s", err))
 		return nil, err
 	}
 	return td, nil
 }
 
-func (j *wt) genRefJWT(user int64, td *TokenDetails) error {
+func (j *wt) genRefJWT(td *TokenDetails) error {
 	secret := viper.GetString("jwt.refSecret")
 
 	// New MapClaims for refresh access token
 	rtClaims := jwt.MapClaims{}
 	rtClaims["uuid"] = td.RefreshUUID
-	rtClaims["id"] = user
 	rtClaims["exp"] = td.RtExpires
 	rt := jwt.NewWithClaims(jwt.SigningMethodHS256, rtClaims)
 
@@ -121,28 +114,35 @@ func (j *wt) genRefJWT(user int64, td *TokenDetails) error {
 	td.RefreshToken, err = rt.SignedString([]byte(secret))
 	if err != nil {
 		log.WithFields(log.Fields{
-			"user_id": user,
+			"ref_uuid": td.RefreshUUID,
 		}).Warn(fmt.Sprintf("Error in Generate RefJWT: %s", err))
 		return err
 	}
 	return nil
 }
 
-func (j *wt) redis(id int64, td *TokenDetails) error {
+func (j *wt) redis(user user.User, td *TokenDetails) error {
 	at := time.Unix(td.AtExpires, 0) //converting Unix to UTC(to Time object)
 	rt := time.Unix(td.RtExpires, 0)
 	now := time.Now()
-	if err := redis.DB.GetDB().Set(context.Background(), td.AccessUUID, strconv.Itoa(int(id)), at.Sub(now)).Err(); err != nil {
+	bt, err := json.Marshal(user)
+	if err != nil {
 		log.WithFields(log.Fields{
-			"user_id":      id,
+			"user": user,
+		}).Warn(fmt.Sprintf("Error in Marshal User: %s", err))
+		return err
+	}
+	if err := redis.DB.GetDB().Set(context.Background(), td.AccessUUID, string(bt), at.Sub(now)).Err(); err != nil {
+		log.WithFields(log.Fields{
+			"user_id":      user.ID,
 			"access_token": td.AccessToken,
 		}).Warn(fmt.Sprintf("Error in Store JWT in Redis: %s", err))
 		return err
 	}
 
-	if err := redis.DB.GetDB().Set(context.Background(), td.RefreshUUID, strconv.Itoa(int(id)), rt.Sub(now)).Err(); err != nil {
+	if err := redis.DB.GetDB().Set(context.Background(), td.RefreshUUID, string(bt), rt.Sub(now)).Err(); err != nil {
 		log.WithFields(log.Fields{
-			"user_id":      id,
+			"user_id":      user.ID,
 			"access_token": td.AccessToken,
 			"ref_token":    td.RefreshToken,
 		}).Warn(fmt.Sprintf("Error in Store RefJWT in Redis: %s", err))

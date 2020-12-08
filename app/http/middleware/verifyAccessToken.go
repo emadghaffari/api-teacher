@@ -32,8 +32,7 @@ func (ac *act) CheckMiddleware(c *gin.Context) {
 	if err != nil {
 		Middleware.RespondWithErrorJSON(c, http.StatusBadRequest, fmt.Sprintf("the access token is invalid. %v", err))
 	} else {
-		c.Request.Header.Set("userID", fmt.Sprint(resp.UserID))
-		c.Request.Header.Set("accessUUID", string(resp.AccessUUID))
+		c.Request.Header.Set("uuid", string(resp.AccessUUID))
 		c.Next()
 	}
 }

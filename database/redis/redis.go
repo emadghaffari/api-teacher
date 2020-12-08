@@ -21,6 +21,7 @@ var (
 type rs interface {
 	New()
 	GetDB() *redis.Client
+	GetBy(key string) *redis.StringCmd
 }
 
 type redi struct {
@@ -47,4 +48,8 @@ func (s *redi) New() {
 
 func (s *redi) GetDB() *redis.Client {
 	return s.db
+}
+
+func (s *redi) GetBy(key string) *redis.StringCmd {
+	return s.db.Get(context.Background(), key)
 }
