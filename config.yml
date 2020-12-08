@@ -13,3 +13,8 @@ postgres:
 gin:
   mode: debug
   port: ":8000"
+jwt:
+  secret: "123465798"
+  refSecret: "132654789"
+  expire: 500
+  RTexpire: 5000
