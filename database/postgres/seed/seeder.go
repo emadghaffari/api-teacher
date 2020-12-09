@@ -8,6 +8,7 @@ import (
 	"github.com/emadghaffari/api-teacher/config/vip"
 	"github.com/emadghaffari/api-teacher/database/postgres"
 	"github.com/emadghaffari/api-teacher/model/user"
+	"github.com/emadghaffari/api-teacher/utils/date"
 	"github.com/emadghaffari/api-teacher/utils/hash"
 )
 
@@ -66,38 +67,6 @@ func main() {
 	s.UserCourses()
 }
 
-func (s *seed) Users() []user.User {
-	rand.Seed(time.Now().UnixNano())
-	db := postgres.DB.GetDB()
-	db.QueryRow("TRUNCATE TABLE users RESTART IDENTITY CASCADE;")
-	sqlStr := "INSERT INTO users (name, lname, identitiy, password) VALUES"
-	for i := 1; i <= 20; i++ {
-		name := names[rand.Intn(len(names))]
-		lname := lnames[rand.Intn(len(lnames))]
-		identitiy := rand.Int63n(10000000000000) + 10000000000
-		password := hash.Generate(10)
-		s.users = append(s.users, user.User{
-			ID:        int64(i),
-			FirstName: name,
-			LastName:  lname,
-			Identitiy: fmt.Sprintf("%d", identitiy),
-			Password:  password,
-			Role:      user.Role{Name: roles[rand.Intn(len(roles))]},
-		})
-		sqlStr += fmt.Sprintf("('%s','%s','%d','%s'),", name, lname, identitiy, password)
-	}
-
-	//trim the last ,
-	sqlStr = sqlStr[0 : len(sqlStr)-1]
-
-	err := db.QueryRow(sqlStr + ";")
-	if err.Err() != nil {
-		fmt.Println(err.Err())
-	}
-
-	return nil
-}
-
 func (s *seed) Roles() {
 	db := postgres.DB.GetDB()
 	db.QueryRow("TRUNCATE TABLE roles RESTART IDENTITY CASCADE;")
@@ -121,10 +90,44 @@ func (s *seed) Roles() {
 	}
 }
 
+func (s *seed) Users() []user.User {
+	rand.Seed(time.Now().UnixNano())
+	db := postgres.DB.GetDB()
+	db.QueryRow("TRUNCATE TABLE users RESTART IDENTITY CASCADE;")
+	sqlStr := "INSERT INTO users (name, lname, identitiy, password,created_at) VALUES"
+	for i := 1; i <= 20; i++ {
+		name := names[rand.Intn(len(names))]
+		lname := lnames[rand.Intn(len(lnames))]
+		identitiy := rand.Int63n(10000000000000) + 10000000000
+		password := hash.Generate(10)
+		createdAt := date.GetNowString()
+		s.users = append(s.users, user.User{
+			ID:        int64(i),
+			FirstName: name,
+			LastName:  lname,
+			Identitiy: fmt.Sprintf("%d", identitiy),
+			Password:  password,
+			Role:      user.Role{Name: roles[rand.Intn(len(roles))]},
+			CreatedAt: createdAt,
+		})
+		sqlStr += fmt.Sprintf("('%s','%s','%d','%s', '%s'),", name, lname, identitiy, password, createdAt)
+	}
+
+	//trim the last ,
+	sqlStr = sqlStr[0 : len(sqlStr)-1]
+
+	err := db.QueryRow(sqlStr + ";")
+	if err.Err() != nil {
+		fmt.Println(err.Err())
+	}
+
+	return nil
+}
+
 func (s *seed) UserRoles() {
 	db := postgres.DB.GetDB()
 	db.QueryRow("TRUNCATE TABLE user_roles RESTART IDENTITY CASCADE;")
-	sqlStr := "INSERT INTO user_roles (user_id, role_id) VALUES"
+	sqlStr := "INSERT INTO user_roles (user_id, role_id, created_at) VALUES"
 	roleID := 0
 
 	for _, user := range s.users {
@@ -133,7 +136,9 @@ func (s *seed) UserRoles() {
 		} else {
 			roleID = 2
 		}
-		sqlStr += fmt.Sprintf("('%d','%d'),", user.ID, roleID)
+		createdAt := date.GetNowString()
+
+		sqlStr += fmt.Sprintf("('%d','%d', '%s'),", user.ID, roleID, createdAt)
 	}
 
 	//trim the last ,
@@ -148,10 +153,12 @@ func (s *seed) UserRoles() {
 func (s *seed) UserCourses() {
 	db := postgres.DB.GetDB()
 	db.QueryRow("TRUNCATE TABLE user_course RESTART IDENTITY CASCADE;")
-	sqlStr := "INSERT INTO user_course (user_id, course_id) VALUES"
+	sqlStr := "INSERT INTO user_course (user_id, course_id, created_at) VALUES"
 	for _, user := range s.users {
 		courseID := int64(rand.Intn(49) + 1)
-		sqlStr += fmt.Sprintf("('%d','%d'),", user.ID, courseID)
+		createdAt := date.GetNowString()
+
+		sqlStr += fmt.Sprintf("('%d','%d','%s'),", user.ID, courseID, createdAt)
 	}
 
 	//trim the last ,
@@ -166,7 +173,7 @@ func (s *seed) Courses() {
 	rand.Seed(time.Now().UnixNano())
 	db := postgres.DB.GetDB()
 	db.QueryRow("TRUNCATE TABLE courses RESTART IDENTITY CASCADE;")
-	sqlStr := "INSERT INTO courses (user_id, name, identitiy, valence, time) VALUES"
+	sqlStr := "INSERT INTO courses (user_id, name, identitiy, valence, time, created_at) VALUES"
 	counter := 50
 	for i := 0; i < counter; i++ {
 		user := s.users[rand.Intn(len(s.users))]
@@ -176,8 +183,9 @@ func (s *seed) Courses() {
 			valence := rand.Int63n(20) + 20
 			time := times[rand.Intn(len(times))]
 			identitiy := rand.Int63n(5000000000000) + 5000000000000
+			createdAt := date.GetNowString()
 
-			sqlStr += fmt.Sprintf("('%d','%s','%d','%d', '%s'),", userID, name, identitiy, valence, time)
+			sqlStr += fmt.Sprintf("('%d','%s','%d','%d', '%s', '%s'),", userID, name, identitiy, valence, time, createdAt)
 		} else {
 			counter++
 		}
