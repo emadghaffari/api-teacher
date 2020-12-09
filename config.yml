@@ -18,3 +18,6 @@ jwt:
   refSecret: "132654789"
   expire: 500
   RTexpire: 5000
+user:
+  MinIdentitiy: 1000000000000
+  MaxIdentitiy: 9999999999999
