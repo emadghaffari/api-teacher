@@ -10,6 +10,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/emadghaffari/api-teacher/database/redis"
+	"github.com/emadghaffari/api-teacher/model/role"
 	model "github.com/emadghaffari/api-teacher/model/user"
 	"github.com/emadghaffari/api-teacher/utils/hash"
 	"github.com/spf13/viper"
@@ -127,11 +128,11 @@ func (j *wt) redis(user model.User, td *TokenDetails) error {
 	now := time.Now()
 
 	// make map for store in redis
-	us := make(map[string]string, 4)
+	us := make(map[string]interface{}, 4)
 	us["identitiy"] = user.Identitiy
-	us["first_name"] = user.FirstName
-	us["last_name"] = user.LastName
-	us["role"] = user.Role.Name
+	us["name"] = user.FirstName
+	us["lname"] = user.LastName
+	us["role"] = role.Role{Name: user.Role.Name}
 
 	bt, err := json.Marshal(us)
 	if err != nil {
