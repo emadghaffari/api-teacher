@@ -1,13 +1,16 @@
 package usercontroller
 
 import (
+	"fmt"
 	"net/http"
 
 	model "github.com/emadghaffari/api-teacher/model/user"
 	service "github.com/emadghaffari/api-teacher/service/user"
 	cryptoutils "github.com/emadghaffari/api-teacher/utils/cryptoUtils"
+	"github.com/emadghaffari/api-teacher/utils/random"
 	"github.com/emadghaffari/res_errors/errors"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
 )
 
 var (
@@ -33,6 +36,14 @@ func (u *user) Login(c *gin.Context) {
 		c.JSON(resErr.Status(), resErr.Message())
 		return
 	}
+
+	// validate user for Login
+	resErr := us.LoginValidate()
+	if resErr != nil {
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+		return
+	}
+
 	us.Password = cryptoutils.GetMD5(us.Password)
 
 	// Login
@@ -45,6 +56,7 @@ func (u *user) Login(c *gin.Context) {
 	tokens := map[string]string{
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
+		"user":          us.FirstName,
 	}
 	c.JSON(http.StatusOK, tokens)
 }
@@ -58,12 +70,21 @@ func (u *user) Register(c *gin.Context) {
 		c.JSON(resErr.Status(), resErr.Message())
 		return
 	}
+
+	// validate user for Register
+	resErr := us.RegisterValidate()
+	if resErr != nil {
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+		return
+	}
+
 	us.Password = cryptoutils.GetMD5(us.Password)
+	us.Identitiy = fmt.Sprintf("%d", random.Rand(viper.GetInt("user.MinIdentitiy"), viper.GetInt("user.MaxIdentitiy")))
 
 	// create a new User
 	ts, resErr := service.Service.Register(us)
 	if resErr != nil {
-		c.JSON(resErr.Status(), resErr)
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
 		return
 	}
 
