@@ -7,6 +7,7 @@ import (
 
 	"github.com/emadghaffari/api-teacher/config/vip"
 	"github.com/emadghaffari/api-teacher/database/postgres"
+	"github.com/emadghaffari/api-teacher/model/role"
 	"github.com/emadghaffari/api-teacher/model/user"
 	"github.com/emadghaffari/api-teacher/utils/date"
 	"github.com/emadghaffari/api-teacher/utils/hash"
@@ -107,7 +108,7 @@ func (s *seed) Users() []user.User {
 			LastName:  lname,
 			Identitiy: fmt.Sprintf("%d", identitiy),
 			Password:  password,
-			Role:      user.Role{Name: roles[rand.Intn(len(roles))]},
+			Role:      role.Role{Name: roles[rand.Intn(len(roles))]},
 			CreatedAt: createdAt,
 		})
 		sqlStr += fmt.Sprintf("('%s','%s','%d','%s', '%s'),", name, lname, identitiy, password, createdAt)
