@@ -49,14 +49,13 @@ func (u *user) Login(c *gin.Context) {
 	// Login
 	ts, resErr := service.Service.Login(us)
 	if resErr != nil {
-		c.JSON(resErr.Status(), resErr)
+		c.JSON(resErr.Status(), resErr.Message())
 		return
 	}
 
 	tokens := map[string]string{
 		"access_token":  ts.AccessToken,
 		"refresh_token": ts.RefreshToken,
-		"user":          us.FirstName,
 	}
 	c.JSON(http.StatusOK, tokens)
 }
