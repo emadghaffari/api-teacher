@@ -12,9 +12,6 @@ func student() {
 	middleware.Role.SetRole("student")
 	authorized.Use(middleware.Role.Check)
 
-	// Take new course
-	authorized.POST("/store", studentcontroller.Router.Store)
-
 	// show all courses taked by user
 	authorized.GET("/", studentcontroller.Router.Index)
 }
