@@ -9,6 +9,9 @@ func student() {
 	authorized := router.Group("/student")
 	authorized.Use(middleware.AccessToken.CheckMiddleware)
 
+	middleware.Role.SetRole("student")
+	authorized.Use(middleware.Role.Check)
+
 	// Take new course
 	authorized.POST("/store", studentcontroller.Router.Store)
 
