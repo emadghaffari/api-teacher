@@ -2,6 +2,7 @@ package user
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/Masterminds/squirrel"
 	"github.com/emadghaffari/api-teacher/database/postgres"
@@ -57,8 +58,10 @@ func (c *User) Login() errors.ResError {
 	result := stms.QueryRow(c.Identitiy, c.Password)
 
 	if err := result.Scan(&c.ID, &c.FirstName, &c.LastName, &c.Identitiy, &c.Role.Name); err != nil {
-		log.Error(fmt.Sprintf("Error in Select Role: %s", err))
-
+		if strings.Contains(err.Error(), "no rows in result set") {
+			return errors.HandlerBadRequest("user Not Found!")
+		}
+		log.Error(fmt.Sprintf("Error in Scan: %s", err))
 		return errors.HandlerInternalServerError(err.Error(), err)
 	}
 

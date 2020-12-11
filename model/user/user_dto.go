@@ -12,7 +12,10 @@ var (
 	Model user = &User{}
 )
 
-type user interface{}
+type user interface {
+	Set(*User)
+	Get() *User
+}
 
 // User struct
 type User struct {
@@ -54,4 +57,14 @@ func (us *User) LoginValidate() errors.ResError {
 	}
 
 	return nil
+}
+
+// Set user
+func (us *User) Set(u *User) {
+	*us = *u
+}
+
+// Get user
+func (us *User) Get() *User {
+	return us
 }
