@@ -9,19 +9,31 @@ var (
 
 // courses interface
 type courses interface {
-	Store(*gin.Context)
 	Index(*gin.Context)
+	Store(*gin.Context)
+	Update(*gin.Context)
+	Take(c *gin.Context)
 }
 
 // course struct
 type course struct{}
 
-// Store new course from course
+// get all courses
+func (u *course) Index(c *gin.Context) {
+
+}
+
+// Store new course
 func (u *course) Store(c *gin.Context) {
 
 }
 
-// get all courses taked by user
-func (u *course) Index(c *gin.Context) {
+// Store new course
+func (u *course) Update(c *gin.Context) {
+
+}
+
+// take a course
+func (u *course) Take(c *gin.Context) {
 
 }

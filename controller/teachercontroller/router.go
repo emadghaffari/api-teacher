@@ -1,11 +1,6 @@
 package teachercontroller
 
 import (
-	"encoding/json"
-	"net/http"
-
-	"github.com/emadghaffari/api-teacher/database/redis"
-	"github.com/emadghaffari/api-teacher/model/user"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,22 +11,12 @@ var (
 
 // teachers interface
 type teachers interface {
-	Store(*gin.Context)
+	Index(*gin.Context)
 }
 
 // teacher struct
 type teacher struct{}
 
-// Store new course from teacher
-func (u *teacher) Store(c *gin.Context) {
-	resp := redis.DB.GetBy(c.Request.Header.Get("uuid"))
-	r, _ := resp.Result()
-
-	us := user.User{}
-	json.Unmarshal([]byte(r), &us)
-	c.JSON(http.StatusOK, map[string]string{
-		"user":  us.FirstName,
-		"lname": us.LastName,
-		"us":    r,
-	})
+// get All courses offered by the teacher
+func (u *teacher) Index(c *gin.Context) {
 }
