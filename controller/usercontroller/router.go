@@ -33,7 +33,7 @@ func (u *user) Login(c *gin.Context) {
 	// Bind the request.Body to user
 	if err := c.ShouldBindJSON(&us); err != nil {
 		resErr := errors.HandlerBadRequest("Invalid JSON Body.")
-		c.JSON(resErr.Status(), resErr.Message())
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
 		return
 	}
 
@@ -49,7 +49,7 @@ func (u *user) Login(c *gin.Context) {
 	// Login
 	ts, resErr := service.Service.Login(us)
 	if resErr != nil {
-		c.JSON(resErr.Status(), resErr.Message())
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
 		return
 	}
 
@@ -66,7 +66,7 @@ func (u *user) Register(c *gin.Context) {
 	// Bind the request.Body to user
 	if err := c.ShouldBindJSON(&us); err != nil {
 		resErr := errors.HandlerBadRequest("Invalid JSON Body.")
-		c.JSON(resErr.Status(), resErr.Message())
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
 		return
 	}
 
