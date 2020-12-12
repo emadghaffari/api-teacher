@@ -52,6 +52,10 @@ func (usr *user) Register(us model.User) (*token.TokenDetails, errors.ResError) 
 	}
 
 	us.Role.Name = rl.Name
-	ts, _ := token.Conf.Generate(us)
+	ts, err := token.Conf.Generate(us)
+	if err != nil {
+		return nil, errors.HandlerInternalServerError("Error in Generate Token: %s", err)
+	}
+
 	return ts, nil
 }
