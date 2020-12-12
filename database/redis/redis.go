@@ -2,8 +2,10 @@ package redis
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 
@@ -21,7 +23,8 @@ var (
 type rs interface {
 	New()
 	GetDB() *redis.Client
-	GetBy(key string) *redis.StringCmd
+	Get(key string, dest interface{}) error
+	Set(key string, value interface{}, duration time.Duration) error
 }
 
 type redi struct {
@@ -50,6 +53,32 @@ func (s *redi) GetDB() *redis.Client {
 	return s.db
 }
 
-func (s *redi) GetBy(key string) *redis.StringCmd {
-	return s.db.Get(context.Background(), key)
+// Set meth a new key,value
+func (s *redi) Set(key string, value interface{}, duration time.Duration) error {
+	p, err := json.Marshal(value)
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": fmt.Sprintf("Marshal Error for Set New item in Redis: %s", err),
+		}).Fatal(fmt.Sprintf("Marshal Error for Set New item in Redis: %s", err))
+		return err
+	}
+	return s.db.Set(context.Background(), key, p, duration).Err()
+}
+
+// Get meth, get value with key
+func (s *redi) Get(key string, dest interface{}) error {
+	p, err := s.db.Get(context.Background(), key).Result()
+
+	if p == "" {
+		return fmt.Errorf("Value Not Found")
+	}
+
+	if err != nil {
+		log.WithFields(log.Fields{
+			"error": fmt.Sprintf("Error in Get value from Redis: %s", err),
+		}).Fatal(fmt.Sprintf("Error in Get value from Redis: %s", err))
+		return err
+	}
+
+	return json.Unmarshal([]byte(p), &dest)
 }
