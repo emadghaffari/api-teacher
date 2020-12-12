@@ -1,11 +1,15 @@
 package course
 
+import "github.com/emadghaffari/res_errors/errors"
+
 var (
-	// Model for courses
-	Model course = &Courses{}
+	// Model for Course
+	Model course = &Course{}
 )
 
-type course interface{}
+type course interface {
+	Index() ([]*Course, errors.ResError)
+}
 
 // Course struct
 type Course struct {
@@ -18,4 +22,4 @@ type Course struct {
 }
 
 // Courses list of Course
-type Courses []*Course
+type Courses []Course
