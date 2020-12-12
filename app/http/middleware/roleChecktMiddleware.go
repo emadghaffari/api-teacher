@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -28,7 +27,6 @@ type role struct {
 
 // check role
 func (ac *role) Check(c *gin.Context) {
-
 	// get uuid from header
 	data := c.Request.Header.Get("uuid")
 	if data == "" {
@@ -36,16 +34,11 @@ func (ac *role) Check(c *gin.Context) {
 	}
 
 	// get data from redis and unmarshal data
-	r, err := redis.DB.GetBy(data).Result()
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err.Error())
-		return
-	}
-
 	// new user struct
 	us := user.User{}
-	if err := json.Unmarshal([]byte(r), &us); err != nil {
-		Middleware.RespondWithErrorJSON(c, http.StatusBadRequest, fmt.Sprintf("error in unmarshal user: %v", err))
+	if err := redis.DB.Get(data, &us); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
 
 	// if user role != seted role
