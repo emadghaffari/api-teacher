@@ -1,6 +1,11 @@
 package coursecontroller
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	service "github.com/emadghaffari/api-teacher/service/course"
+	"github.com/gin-gonic/gin"
+)
 
 var (
 	// Router var
@@ -20,12 +25,17 @@ type course struct{}
 
 // get all courses
 func (u *course) Index(c *gin.Context) {
-
+	// create a new User
+	ts, resErr := service.Service.Index()
+	if resErr != nil {
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+		return
+	}
+	c.JSON(http.StatusOK, ts)
 }
 
 // Store new course
 func (u *course) Store(c *gin.Context) {
-
 }
 
 // Store new course
