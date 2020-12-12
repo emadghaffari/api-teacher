@@ -1,0 +1,67 @@
+# Docker Compose file Reference (https://docs.docker.com/compose/compose-file/)
+
+version: '3'
+
+# Define services
+services:
+
+  # App Service
+  app:
+    # Configuration for building the docker image for the service
+    build:
+      context: . # Use an image built from the specified dockerfile in the current directory.
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000" # Forward the exposed port 8000 on the container to port 8000 on the host machine
+    restart: unless-stopped
+    depends_on: 
+      - redis # This service depends on redis. Start that first.
+      - db # This service depends on db. Start that first.
+    networks: # Networks to join (Services on the same network can communicate with each other using their name)
+      - backend
+
+  # Redis Service   
+  redis:
+    container_name: redis
+    hostname: redis
+    image: redis
+    networks:
+      - backend
+
+  # redis ui
+  redis-commander:
+    container_name: redis-commander
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: unless-stopped
+    environment:
+    - REDIS_HOSTS=local:redis:6379
+    ports:
+    - "8081:8081"
+    networks:
+      - frontend
+      - backend
+
+  # postgres
+  db:
+    image: postgres:9.5-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    networks:
+      - backend
+
+  # postgres ui
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - 3656:8080
+    networks:
+      - frontend
+      - backend
+networks:
+  backend: 
+  frontend:  
