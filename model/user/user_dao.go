@@ -15,8 +15,6 @@ var (
 	loginQuery = "SELECT cp.id,cp.name,cp.lname,cp.identitiy,m.name as role FROM roles as m INNER JOIN user_roles as p ON m.id = p.role_id INNER JOIN users as cp ON p.user_id = cp.id WHERE cp.identitiy = $1 AND cp.password = $2 ;"
 )
 
-// SELECT cp.id,cp.name,cp.lname,cp.identitiy,m.name FROM users WHERE identitiy= $1 AND password= $2 ;
-
 // Register meth create new User
 func (c *User) Register() errors.ResError {
 	db := postgres.DB.GetDB()
