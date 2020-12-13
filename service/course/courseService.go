@@ -42,7 +42,7 @@ func (cs *course) Store(item *model.Course) errors.ResError {
 		return err
 	}
 
-	redis.DB.Del("courses")
+	redis.DB.Del("courses", fmt.Sprintf("teacher-courses-%d", user.Model.Get().ID))
 	return nil
 }
 
@@ -52,7 +52,7 @@ func (cs *course) Update(item *model.Course) errors.ResError {
 		return err
 	}
 
-	redis.DB.Del("courses")
+	redis.DB.Del("courses", fmt.Sprintf("teacher-courses-%d", user.Model.Get().ID))
 	return nil
 }
 
@@ -62,6 +62,6 @@ func (cs *course) Take(item *model.Course) errors.ResError {
 		return err
 	}
 
-	redis.DB.Del(fmt.Sprintf("user-courses-%d", user.Model.Get().ID))
+	redis.DB.Del(fmt.Sprintf("user-courses-%d", user.Model.Get().ID), fmt.Sprintf("teacher-courses-%d", item.Teacher.ID))
 	return nil
 }
