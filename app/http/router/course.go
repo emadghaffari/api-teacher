@@ -6,25 +6,22 @@ import (
 )
 
 func course() {
-
-	authorized := router.Group("/course")
-	authorized.Use(middleware.AccessToken.CheckMiddleware)
-
 	// show all courses
-	authorized.GET("/", coursecontroller.Router.Index)
+	router.GET("/course", coursecontroller.Router.Index)
+
+	teacher := router.Group("/course")
+	teacher.Use(middleware.AccessToken.CheckMiddleware)
+	teacher.Use(middleware.Role.Check("teacher"))
 
 	// Store new course
-	authorized.Use(middleware.Role.Check("teacher"))
-	{
-		authorized.POST("/store", coursecontroller.Router.Store)
+	teacher.POST("/store", coursecontroller.Router.Store)
+	// update new course
+	teacher.POST("/update", coursecontroller.Router.Update)
 
-		// update new course
-		authorized.POST("/update", coursecontroller.Router.Update)
-	}
+	student := router.Group("/course")
+	student.Use(middleware.AccessToken.CheckMiddleware)
+	student.Use(middleware.Role.Check("student"))
 
 	// Take new course
-	authorized.Use(middleware.Role.Check("student"))
-	{
-		authorized.POST("/take", coursecontroller.Router.Take)
-	}
+	student.POST("/take", coursecontroller.Router.Take)
 }
