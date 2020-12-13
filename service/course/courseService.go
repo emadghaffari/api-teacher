@@ -1,10 +1,12 @@
 package course
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/emadghaffari/api-teacher/database/redis"
 	model "github.com/emadghaffari/api-teacher/model/course"
+	"github.com/emadghaffari/api-teacher/model/user"
 	"github.com/emadghaffari/res_errors/errors"
 )
 
@@ -40,6 +42,7 @@ func (cs *course) Store(item *model.Course) errors.ResError {
 		return err
 	}
 
+	redis.DB.Del("courses")
 	return nil
 }
 
@@ -49,6 +52,7 @@ func (cs *course) Update(item *model.Course) errors.ResError {
 		return err
 	}
 
+	redis.DB.Del("courses")
 	return nil
 }
 
@@ -58,5 +62,6 @@ func (cs *course) Take(item *model.Course) errors.ResError {
 		return err
 	}
 
+	redis.DB.Del(fmt.Sprintf("user-courses-%d", user.Model.Get().ID))
 	return nil
 }
