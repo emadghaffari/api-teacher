@@ -17,7 +17,7 @@ var (
 	updateQuery = "UPDATE courses SET name = $1 , valence = $2 , time= $3 WHERE identitiy = $4 AND user_id = $5 RETURNING id;"
 
 	userCourseQuery = "INSERT into user_course (course_id,user_id,created_at) VALUES($1 , $2 , $3 ) ON CONFLICT DO NOTHING;"
-	takeQuery       = "UPDATE courses SET valence = valence - 1 WHERE valence > 0 AND identitiy = $1 AND id NOT IN (select id from user_course WHERE user_id = $2 AND user_course.course_id = courses.id) RETURNING id,valence;"
+	takeQuery       = "UPDATE courses SET valence = valence - 1 WHERE valence > 0 AND identitiy = $1 AND id NOT IN (select id from user_course WHERE user_id = $2 AND user_course.course_id = courses.id) RETURNING id,valence,user_id;"
 )
 
 // Index meth, get courses
@@ -58,7 +58,7 @@ func (u *Course) Store() errors.ResError {
 	db := postgres.DB.GetDB()
 
 	if err := db.QueryRow(storeQuery, user.Model.Get().ID, u.Name, u.Identitiy, u.Valence, u.Time, date.GetNowString()).Scan(&u.ID); err != nil {
-		log.Error(fmt.Sprintf("Error in store new course: %s", err))
+		log.Error(fmt.Sprintf("Error in store new course: %s", err.Error()))
 		return errors.HandlerInternalServerError(err.Error(), err)
 	}
 
@@ -90,7 +90,8 @@ func (u *Course) Take() errors.ResError {
 	}
 	defer tx.Commit()
 
-	if err := tx.QueryRow(takeQuery, u.Identitiy, user.Model.Get().ID).Scan(&u.ID, &u.Valence); err != nil {
+	var us user.User
+	if err := tx.QueryRow(takeQuery, u.Identitiy, user.Model.Get().ID).Scan(&u.ID, &u.Valence, &us.ID); err != nil {
 		if u.Valence == 0 {
 			return errors.HandlerBadRequest(fmt.Sprintf("The valence of the course(%s) is over", u.Identitiy))
 		}
@@ -114,6 +115,7 @@ func (u *Course) Take() errors.ResError {
 		tx.Rollback()
 		return errors.HandlerInternalServerError(err.Error(), err)
 	}
+	u.Teacher = &us
 
 	return nil
 }
