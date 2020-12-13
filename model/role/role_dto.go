@@ -9,6 +9,6 @@ type role interface{}
 
 // Role struct teacher, student
 type Role struct {
-	ID   int64  `json:"-"`
-	Name string `json:"name"`
+	ID   int64  `json:"-,omitempty"`
+	Name string `json:"name,omitempty"`
 }
