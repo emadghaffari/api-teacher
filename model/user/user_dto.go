@@ -19,7 +19,7 @@ type user interface {
 
 // User struct
 type User struct {
-	ID        int64      `json:"-"`
+	ID        int64      `json:"id,omitempty"`
 	FirstName string     `json:"name,omitempty"`
 	LastName  string     `json:"lname,omitempty"`
 	Identitiy string     `json:"identitiy,omitempty"`
