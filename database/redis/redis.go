@@ -82,3 +82,11 @@ func (s *redi) Get(key string, dest interface{}) error {
 
 	return json.Unmarshal([]byte(p), &dest)
 }
+
+func (s *redi) Del(key string) error {
+	_, err := s.db.Del(context.Background(), key).Result()
+	if err != nil {
+		return err
+	}
+	return nil
+}
