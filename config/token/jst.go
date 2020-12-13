@@ -129,6 +129,7 @@ func (j *wt) redis(user model.User, td *TokenDetails) error {
 
 	// make map for store in redis
 	us := make(map[string]interface{}, 4)
+	us["id"] = user.ID
 	us["identitiy"] = user.Identitiy
 	us["name"] = user.FirstName
 	us["lname"] = user.LastName
