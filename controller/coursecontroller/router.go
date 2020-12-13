@@ -1,9 +1,15 @@
 package coursecontroller
 
 import (
+	"fmt"
 	"net/http"
 
+	model "github.com/emadghaffari/api-teacher/model/course"
 	service "github.com/emadghaffari/api-teacher/service/course"
+	"github.com/emadghaffari/api-teacher/utils/random"
+	"github.com/spf13/viper"
+
+	"github.com/emadghaffari/res_errors/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -36,6 +42,29 @@ func (u *course) Index(c *gin.Context) {
 
 // Store new course
 func (u *course) Store(c *gin.Context) {
+	cs := model.Course{}
+
+	// Bind the request.Body to user
+	if err := c.ShouldBindJSON(&cs); err != nil {
+		resErr := errors.HandlerBadRequest("Invalid JSON Body.")
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+		return
+	}
+
+	if err := cs.StoreValidate(); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	cs.Identitiy = fmt.Sprintf("%d", random.Rand(viper.GetInt("course.MinIdentitiy"), viper.GetInt("course.MaxIdentitiy")))
+
+	// create a new Course
+	if err := service.Service.Store(&cs); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": cs})
 }
 
 // Store new course
