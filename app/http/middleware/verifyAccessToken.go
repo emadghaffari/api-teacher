@@ -36,6 +36,6 @@ func (ac *act) CheckMiddleware(c *gin.Context) {
 	}
 
 	c.Request.Header.Set("uuid", string(resp.AccessUUID))
-	c.Next()
+	// c.Next()
 
 }

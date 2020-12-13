@@ -10,7 +10,9 @@ func teacher() {
 	authorized.Use(middleware.AccessToken.CheckMiddleware)
 
 	authorized.Use(middleware.Role.Check("teacher"))
+	{
+		// show teacher courses
+		authorized.GET("/", teachercontroller.Router.Index)
+	}
 
-	// show teacher courses
-	authorized.GET("/", teachercontroller.Router.Index)
 }

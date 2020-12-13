@@ -10,7 +10,9 @@ func student() {
 	authorized.Use(middleware.AccessToken.CheckMiddleware)
 
 	authorized.Use(middleware.Role.Check("student"))
+	{
+		// show all courses taked by user
+		authorized.GET("/", studentcontroller.Router.Index)
+	}
 
-	// show all courses taked by user
-	authorized.GET("/", studentcontroller.Router.Index)
 }
