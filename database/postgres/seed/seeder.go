@@ -108,7 +108,7 @@ func (s *seed) Users() []user.User {
 			LastName:  lname,
 			Identitiy: fmt.Sprintf("%d", identitiy),
 			Password:  password,
-			Role:      role.Role{Name: roles[rand.Intn(len(roles))]},
+			Role:      &role.Role{Name: roles[rand.Intn(len(roles))]},
 			CreatedAt: createdAt,
 		})
 		sqlStr += fmt.Sprintf("('%s','%s','%d','%s', '%s'),", name, lname, identitiy, password, createdAt)
