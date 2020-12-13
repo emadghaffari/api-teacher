@@ -21,3 +21,6 @@ jwt:
 user:
   MinIdentitiy: 1000000000000
   MaxIdentitiy: 9999999999999
+course:
+  MinIdentitiy: 1000000000000
+  MaxIdentitiy: 9999999999999
