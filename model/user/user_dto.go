@@ -13,6 +13,8 @@ var (
 )
 
 type user interface {
+	Register() errors.ResError
+	Login() errors.ResError
 	Set(*User)
 	Get() *User
 }
