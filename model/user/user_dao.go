@@ -28,17 +28,19 @@ func (c *User) Register() errors.ResError {
 		log.Error(fmt.Sprintf("Error in StatementBuilder: %s", err))
 		return errors.HandlerInternalServerError(err.Error(), err)
 	}
+
 	tx, err := db.Begin()
 	if err != nil {
 		log.Error(fmt.Sprintf("Error in BeginDB: %s", err))
 		return errors.HandlerInternalServerError(err.Error(), err)
 	}
+	defer tx.Commit()
 
 	if err := tx.QueryRow(query, args...).Scan(&c.ID); err != nil {
 		log.Error(fmt.Sprintf("Error in QueryRow: %s", err))
+		tx.Rollback()
 		return errors.HandlerInternalServerError(err.Error(), err)
 	}
-	tx.Commit()
 
 	return nil
 }
