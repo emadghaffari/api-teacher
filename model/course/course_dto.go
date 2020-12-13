@@ -68,10 +68,6 @@ func (cs *Course) TakeValidate() errors.ResError {
 		return errors.HandlerBadRequest("Invalid User Details")
 	}
 
-	if cs.ID == 0 {
-		return errors.HandlerBadRequest("Invalid Course Details")
-	}
-
 	cs.Identitiy = strings.TrimSpace(cs.Identitiy)
 	if cs.Identitiy == "" {
 		return errors.HandlerBadRequest("Invalid Course Identitiy")

@@ -2,6 +2,7 @@ package course
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/emadghaffari/api-teacher/database/postgres"
 	"github.com/emadghaffari/api-teacher/model/user"
@@ -16,7 +17,7 @@ var (
 	updateQuery = "UPDATE courses SET name = $1 , valence = $2 , time= $3 WHERE identitiy = $4 AND user_id = $5 RETURNING id;"
 
 	userCourseQuery = "INSERT into user_course (course_id,user_id,created_at) VALUES($1 , $2 , $3 ) ON CONFLICT DO NOTHING;"
-	takeQuery       = "UPDATE courses SET valence = valence - 1 WHERE valence >= 1 AND identitiy = $1 AND id NOT IN (select id from user_course WHERE user_id = $2 AND user_course.course_id = courses.id) RETURNING id;"
+	takeQuery       = "UPDATE courses SET valence = valence - 1 WHERE valence > 0 AND identitiy = $1 AND id NOT IN (select id from user_course WHERE user_id = $2 AND user_course.course_id = courses.id) RETURNING id,valence;"
 )
 
 // Index meth, get courses
@@ -89,13 +90,20 @@ func (u *Course) Take() errors.ResError {
 	}
 	defer tx.Commit()
 
-	if err := tx.QueryRow(takeQuery, u.Identitiy, user.Model.Get().ID).Scan(&u.ID); err != nil {
-		log.WithFields(log.Fields{
-			"user":   user.Model.Get().ID,
-			"course": u.Identitiy,
-		}).Error(fmt.Sprintf("Error in take course for student: %s", err))
-		tx.Rollback()
-		return errors.HandlerInternalServerError(err.Error(), err)
+	if err := tx.QueryRow(takeQuery, u.Identitiy, user.Model.Get().ID).Scan(&u.ID, &u.Valence); err != nil {
+		if u.Valence == 0 {
+			return errors.HandlerBadRequest(fmt.Sprintf("The valence of the course(%s) is over", u.Identitiy))
+		}
+		if !strings.Contains(err.Error(), "no rows in result set") {
+			log.WithFields(log.Fields{
+				"user":   user.Model.Get().ID,
+				"course": u.Identitiy,
+			}).Error(fmt.Sprintf("Error in take course for student: %s", err))
+			tx.Rollback()
+			return errors.HandlerInternalServerError(err.Error(), err)
+		}
+
+		return errors.HandlerBadRequest(fmt.Sprintf("This course(%s) has already been taken", u.Identitiy))
 	}
 
 	if err := tx.QueryRow(userCourseQuery, u.ID, user.Model.Get().ID, date.GetNowString()).Err(); err != nil {
