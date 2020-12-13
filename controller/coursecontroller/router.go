@@ -90,7 +90,28 @@ func (u *course) Update(c *gin.Context) {
 
 // take a course
 func (u *course) Take(c *gin.Context) {
+	cs := model.Course{}
 
+	if err := u.bind(c, &cs); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	if err := cs.TakeValidate(); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	// create a new Course
+	if err := service.Service.Take(&cs); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": gin.H{
+		"identitiy": cs.Identitiy,
+		"message":   "You have successfully registered for the course",
+	}})
 }
 
 func (u *course) bind(c *gin.Context, cs *model.Course) errors.ResError {
