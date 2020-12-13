@@ -25,6 +25,7 @@ type rs interface {
 	GetDB() *redis.Client
 	Get(key string, dest interface{}) error
 	Set(key string, value interface{}, duration time.Duration) error
+	Del(key string) error
 }
 
 type redi struct {
