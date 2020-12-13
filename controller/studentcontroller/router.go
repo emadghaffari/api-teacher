@@ -1,6 +1,9 @@
 package studentcontroller
 
 import (
+	"net/http"
+
+	std "github.com/emadghaffari/api-teacher/service/student"
 	"github.com/gin-gonic/gin"
 )
 
@@ -19,5 +22,11 @@ type student struct{}
 
 // get all courses taked by user
 func (u *student) Index(c *gin.Context) {
-
+	// create a new User
+	ts, resErr := std.Service.Index()
+	if resErr != nil {
+		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+		return
+	}
+	c.JSON(http.StatusOK, ts)
 }
