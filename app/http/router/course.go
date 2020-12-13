@@ -14,13 +14,11 @@ func course() {
 	authorized.GET("/", coursecontroller.Router.Index)
 
 	// Store new course
-	middleware.Role.SetRole("teacher")
-	authorized.POST("/store", coursecontroller.Router.Store, middleware.Role.Check)
+	authorized.POST("/store", coursecontroller.Router.Store, middleware.Role.Check("teacher"))
 
 	// update new course
-	authorized.POST("/update", coursecontroller.Router.Update, middleware.Role.Check)
+	authorized.POST("/update", coursecontroller.Router.Update, middleware.Role.Check("teacher"))
 
 	// Take new course
-	middleware.Role.SetRole("student")
-	authorized.POST("/take", coursecontroller.Router.Take, middleware.Role.Check)
+	authorized.POST("/take", coursecontroller.Router.Take, middleware.Role.Check("student"))
 }

@@ -27,12 +27,15 @@ func (ac *act) CheckMiddleware(c *gin.Context) {
 	strArr := strings.Split(bearToken, " ")
 	if len(strArr) != 2 {
 		Middleware.RespondWithErrorJSON(c, http.StatusBadRequest, "the access token is invalid.")
+		return
 	}
 	resp, err := token.Conf.VerifyToken(strArr[1])
 	if err != nil {
 		Middleware.RespondWithErrorJSON(c, http.StatusBadRequest, fmt.Sprintf("the access token is invalid. %v", err))
-	} else {
-		c.Request.Header.Set("uuid", string(resp.AccessUUID))
-		c.Next()
+		return
 	}
+
+	c.Request.Header.Set("uuid", string(resp.AccessUUID))
+	c.Next()
+
 }

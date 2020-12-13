@@ -9,8 +9,7 @@ func student() {
 	authorized := router.Group("/student")
 	authorized.Use(middleware.AccessToken.CheckMiddleware)
 
-	middleware.Role.SetRole("student")
-	authorized.Use(middleware.Role.Check)
+	authorized.Use(middleware.Role.Check("student"))
 
 	// show all courses taked by user
 	authorized.GET("/", studentcontroller.Router.Index)

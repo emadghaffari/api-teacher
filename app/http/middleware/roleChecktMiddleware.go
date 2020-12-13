@@ -16,21 +16,26 @@ var (
 
 // rolMiddleware interface
 type rolMiddleware interface {
-	Check(c *gin.Context)
-	SetRole(role string)
+	Check(role string) gin.HandlerFunc
 }
 
 // role struct
-type role struct {
-	Role string
+type role struct{}
+
+func (ac *role) Check(role string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Set("role", role)
+		ac.check(c)
+	}
 }
 
 // check role
-func (ac *role) Check(c *gin.Context) {
+func (ac *role) check(c *gin.Context) {
 	// get uuid from header
 	data := c.Request.Header.Get("uuid")
 	if data == "" {
 		Middleware.RespondWithErrorJSON(c, http.StatusBadRequest, "invalid uuid for user.")
+		return
 	}
 
 	// get data from redis and unmarshal data
@@ -41,17 +46,19 @@ func (ac *role) Check(c *gin.Context) {
 		return
 	}
 
+	role, ext := c.Get("role")
+	if !ext {
+		Middleware.RespondWithErrorJSON(c, http.StatusNotAcceptable, fmt.Sprintf("user not allowed to Access."))
+		return
+	}
+
 	// if user role != seted role
-	if ac.Role != us.Role.Name {
+	if role != us.Role.Name {
 		Middleware.RespondWithErrorJSON(c, http.StatusNotAcceptable, fmt.Sprintf("user not allowed to Access"))
+		return
 	}
 
 	// set struct and go to next!
 	user.Model.Set(&us)
 	c.Next()
-}
-
-// SetRole for check by middleware
-func (ac *role) SetRole(role string) {
-	ac.Role = role
 }
