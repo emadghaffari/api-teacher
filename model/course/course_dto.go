@@ -18,12 +18,12 @@ type course interface {
 
 // Course struct
 type Course struct {
-	ID        int64     `json:"id,omitempty"`
-	Teacher   user.User `json:"teacher,omitempty"`
-	Name      string    `json:"name,omitempty"`
-	Identitiy string    `json:"identitiy,omitempty"`
-	Valence   uint32    `json:"valence,omitempty"`
-	Time      string    `json:"time,omitempty"`
+	ID        int64      `json:"id,omitempty"`
+	Teacher   *user.User `json:"teacher,omitempty"`
+	Name      string     `json:"name,omitempty"`
+	Identitiy string     `json:"identitiy,omitempty"`
+	Valence   uint32     `json:"valence,omitempty"`
+	Time      string     `json:"time,omitempty"`
 }
 
 // Courses var list of Course
@@ -48,14 +48,15 @@ func (cs *Course) UpdateValidate() errors.ResError {
 	if cs.Name == "" {
 		return errors.HandlerBadRequest("Invalid Course Name")
 	}
+	cs.Identitiy = strings.TrimSpace(cs.Identitiy)
+	if cs.Identitiy == "" {
+		return errors.HandlerBadRequest("Invalid Course Identitiy")
+	}
 	if cs.Time == "" {
 		return errors.HandlerBadRequest("Invalid Course Time")
 	}
 	if cs.Valence <= 1 {
 		return errors.HandlerBadRequest("invalid Course Valence")
-	}
-	if cs.Teacher.ID != 0 {
-		return errors.HandlerBadRequest("invalid Teacher Details")
 	}
 	return nil
 }

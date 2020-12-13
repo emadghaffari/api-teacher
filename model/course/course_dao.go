@@ -13,7 +13,7 @@ import (
 var (
 	indexQuery  = "SELECT c.id,c.name,c.identitiy,c.valence,c.time,u.name,u.lname FROM courses as c INNER JOIN users as u ON c.user_id=u.id WHERE c.valence >= $1"
 	storeQuery  = "INSERT INTO courses (user_id, name, identitiy, valence, time, created_at) VALUES ($1 , $2 , $3 , $4 , $5 , $6 ) RETURNING id;"
-	updateQuery = "UPDATE courses SET name = $1 , valence = $2 , time= $3 WHERE identitiy = $4 AND user_id = $5 ;"
+	updateQuery = "UPDATE courses SET name = $1 , valence = $2 , time= $3 WHERE identitiy = $4 AND user_id = $5 RETURNING id;"
 
 	userCourseQuery = "INSERT into user_course (course_id,user_id,created_at) VALUES($1 , $2 , $3 ) ON CONFLICT DO NOTHING;"
 	takeQuery       = "UPDATE courses SET valence = valence - 1 WHERE valence >= 1 AND identitiy = $1 AND id NOT IN (select id from user_course WHERE user_id = $2 AND user_course.course_id = courses.id) RETURNING id;"
@@ -32,14 +32,16 @@ func (u *Course) Index() (Courses, errors.ResError) {
 	items := make(Courses, 0)
 	for rows.Next() {
 		var cs Course
+		var us user.User
 		err := rows.Scan(&cs.ID,
 			&cs.Name,
 			&cs.Identitiy,
 			&cs.Valence,
 			&cs.Time,
-			&cs.Teacher.FirstName,
-			&cs.Teacher.LastName,
+			&us.FirstName,
+			&us.LastName,
 		)
+		cs.Teacher = &us
 		if err != nil {
 			log.Error(fmt.Sprintf("Error in Scan rows for get a list of courses: \ncourse:%v \nerror: %s", cs, err))
 			return nil, errors.HandlerInternalServerError(err.Error(), err)
@@ -66,23 +68,12 @@ func (u *Course) Store() errors.ResError {
 func (u *Course) Update() errors.ResError {
 	db := postgres.DB.GetDB()
 
-	stms, err := db.Prepare(updateQuery)
+	err := db.QueryRow(updateQuery, u.Name, u.Valence, u.Time, u.Identitiy, user.Model.Get().ID).Err()
 	if err != nil {
 		log.Error(fmt.Sprintf("Error in update course: %s", err))
+		return errors.HandlerInternalServerError(err.Error(), err)
+	}
 
-		return errors.HandlerInternalServerError(err.Error(), err)
-	}
-	defer stms.Close()
-
-	_, err = stms.Exec(u.Name, u.Valence, u.Time, u.Identitiy, user.Model.Get().ID)
-	if err != nil {
-		log.Error(fmt.Sprintf("Error in Exec update course: %s", err))
-		return errors.HandlerInternalServerError(err.Error(), err)
-	}
-	if err != nil {
-		log.Error(fmt.Sprintf("Error in get courseID after update: %s", err))
-		return errors.HandlerInternalServerError(err.Error(), err)
-	}
 	return nil
 }
 
