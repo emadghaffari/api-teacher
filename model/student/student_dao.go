@@ -39,7 +39,10 @@ func (u *Student) Index() (course.Courses, errors.ResError) {
 		err := rows.Scan(
 			&cs.Name,
 			&cs.Identitiy,
-			&cs.Time,
+			&cs.Value,
+			&cs.Start,
+			&cs.End,
+			&cs.Description,
 			&us.FirstName,
 			&us.LastName,
 		)

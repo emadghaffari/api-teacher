@@ -11,7 +11,7 @@ import (
 )
 
 var (
-	indexQuery = `SELECT name,identitiy,valence,time from courses where user_id = $1;`
+	indexQuery = `SELECT name,identitiy,valence, value, start_at, end_at, description from courses where user_id = $1;`
 )
 
 // Index meth, get all courses for student
@@ -31,7 +31,10 @@ func (ts *Teacher) Index() (course.Courses, errors.ResError) {
 			&cs.Name,
 			&cs.Identitiy,
 			&cs.Valence,
-			&cs.Time,
+			&cs.Value,
+			&cs.Start,
+			&cs.End,
+			&cs.Description,
 		)
 		if err != nil {
 			log.Error(fmt.Sprintf("Error in Scan rows for get a list of courses: \ncourse:%v \nerror: %s", cs, err))

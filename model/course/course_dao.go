@@ -12,9 +12,9 @@ import (
 )
 
 var (
-	indexQuery  = "SELECT c.id,c.name,c.identitiy,c.valence,c.time,u.name,u.lname FROM courses as c INNER JOIN users as u ON c.user_id=u.id WHERE c.valence >= $1"
-	storeQuery  = "INSERT INTO courses (user_id, name, identitiy, valence, time, created_at) VALUES ($1 , $2 , $3 , $4 , $5 , $6 ) RETURNING id;"
-	updateQuery = "UPDATE courses SET name = $1 , valence = $2 , time= $3 WHERE identitiy = $4 AND user_id = $5 RETURNING id;"
+	indexQuery  = "SELECT c.id,c.name,c.identitiy,c.valence, c.value, c.start_at, c.end_at, c.description,u.name,u.lname FROM courses as c INNER JOIN users as u ON c.user_id=u.id WHERE c.valence >= $1"
+	storeQuery  = "INSERT INTO courses (user_id, name, identitiy, valence, value, start_at, end_at, description , created_at) VALUES ($1 , $2 , $3 , $4 , $5 , $6, $7 , $8 , $9 ) RETURNING id;"
+	updateQuery = "UPDATE courses SET name = $1 , valence = $2 , value= $3 , start_at= $4 , end_at= $5, description= $6 WHERE identitiy = $7 AND user_id = $8 RETURNING id;"
 
 	userCourseQuery = "INSERT into user_course (course_id,user_id,created_at) VALUES($1 , $2 , $3 ) ON CONFLICT DO NOTHING;"
 	takeQuery       = "UPDATE courses SET valence = valence - 1 WHERE valence > 0 AND identitiy = $1 AND id NOT IN (select id from user_course WHERE user_id = $2 AND user_course.course_id = courses.id) RETURNING id,valence,user_id;"
@@ -38,7 +38,10 @@ func (u *Course) Index() (Courses, errors.ResError) {
 			&cs.Name,
 			&cs.Identitiy,
 			&cs.Valence,
-			&cs.Time,
+			&cs.Value,
+			&cs.Start,
+			&cs.End,
+			&cs.Description,
 			&us.FirstName,
 			&us.LastName,
 		)
@@ -57,7 +60,7 @@ func (u *Course) Index() (Courses, errors.ResError) {
 func (u *Course) Store() errors.ResError {
 	db := postgres.DB.GetDB()
 
-	if err := db.QueryRow(storeQuery, user.Model.Get().ID, u.Name, u.Identitiy, u.Valence, u.Time, date.GetNowString()).Scan(&u.ID); err != nil {
+	if err := db.QueryRow(storeQuery, user.Model.Get().ID, u.Name, u.Identitiy, u.Valence, u.Value, u.Start, u.End, u.Description, date.GetNowString()).Scan(&u.ID); err != nil {
 		log.Error(fmt.Sprintf("Error in store new course: %s", err.Error()))
 		return errors.HandlerInternalServerError(err.Error(), err)
 	}
@@ -69,7 +72,7 @@ func (u *Course) Store() errors.ResError {
 func (u *Course) Update() errors.ResError {
 	db := postgres.DB.GetDB()
 
-	err := db.QueryRow(updateQuery, u.Name, u.Valence, u.Time, u.Identitiy, user.Model.Get().ID).Err()
+	err := db.QueryRow(updateQuery, u.Name, u.Valence, u.Value, u.Start, u.End, u.Description, u.Identitiy, user.Model.Get().ID).Err()
 	if err != nil {
 		log.Error(fmt.Sprintf("Error in update course: %s", err))
 		return errors.HandlerInternalServerError(err.Error(), err)
