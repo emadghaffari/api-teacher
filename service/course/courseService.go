@@ -14,12 +14,15 @@ var (
 )
 
 type courses interface {
-	Index() ([]*model.Course, errors.ResError)
+	Index() (model.Courses, errors.ResError)
+	Store(item *model.Course) errors.ResError
+	Update(item *model.Course) errors.ResError
+	Take(item *model.Course) errors.ResError
 }
 
 type course struct{}
 
-func (cs *course) Index() (items []*model.Course, err errors.ResError) {
+func (cs *course) Index() (items model.Courses, err errors.ResError) {
 	redis.DB.Get("courses", &items)
 	if len(items) == 0 {
 		items, err = model.Model.Index()
@@ -29,4 +32,31 @@ func (cs *course) Index() (items []*model.Course, err errors.ResError) {
 		redis.DB.Set("courses", items, time.Duration(time.Hour*72))
 	}
 	return items, nil
+}
+
+func (cs *course) Store(item *model.Course) errors.ResError {
+
+	if err := item.Store(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cs *course) Update(item *model.Course) errors.ResError {
+
+	if err := item.Update(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (cs *course) Take(item *model.Course) errors.ResError {
+
+	if err := item.Take(); err != nil {
+		return err
+	}
+
+	return nil
 }
