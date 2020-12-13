@@ -19,13 +19,13 @@ type user interface {
 
 // User struct
 type User struct {
-	ID        int64     `json:"-"`
-	FirstName string    `json:"name"`
-	LastName  string    `json:"lname"`
-	Identitiy string    `json:"identitiy"`
-	CreatedAt string    `json:"created_at"`
-	Password  string    `json:"password"`
-	Role      role.Role `json:"role"`
+	ID        int64      `json:"-"`
+	FirstName string     `json:"name,omitempty"`
+	LastName  string     `json:"lname,omitempty"`
+	Identitiy string     `json:"identitiy,omitempty"`
+	CreatedAt string     `json:"created_at,omitempty"`
+	Password  string     `json:"password,omitempty"`
+	Role      *role.Role `json:"role,omitempty"`
 }
 
 // RegisterValidate user

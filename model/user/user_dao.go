@@ -6,6 +6,7 @@ import (
 
 	"github.com/Masterminds/squirrel"
 	"github.com/emadghaffari/api-teacher/database/postgres"
+	"github.com/emadghaffari/api-teacher/model/role"
 	"github.com/emadghaffari/api-teacher/utils/date"
 	"github.com/emadghaffari/res_errors/errors"
 	log "github.com/sirupsen/logrus"
@@ -57,12 +58,16 @@ func (c *User) Login() errors.ResError {
 	defer stms.Close()
 	result := stms.QueryRow(c.Identitiy, c.Password)
 
-	if err := result.Scan(&c.ID, &c.FirstName, &c.LastName, &c.Identitiy, &c.Role.Name); err != nil {
+	var rl string
+	if err := result.Scan(&c.ID, &c.FirstName, &c.LastName, &c.Identitiy, &rl); err != nil {
 		if strings.Contains(err.Error(), "no rows in result set") {
 			return errors.HandlerBadRequest("user Not Found!")
 		}
 		log.Error(fmt.Sprintf("Error in Scan: %s", err))
 		return errors.HandlerInternalServerError(err.Error(), err)
+	}
+	c.Role = &role.Role{
+		Name: rl,
 	}
 
 	return nil
