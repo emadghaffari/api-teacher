@@ -25,7 +25,7 @@ type rs interface {
 	GetDB() *redis.Client
 	Get(key string, dest interface{}) error
 	Set(key string, value interface{}, duration time.Duration) error
-	Del(key string) error
+	Del(key ...string) error
 }
 
 type redi struct {
@@ -84,8 +84,8 @@ func (s *redi) Get(key string, dest interface{}) error {
 	return json.Unmarshal([]byte(p), &dest)
 }
 
-func (s *redi) Del(key string) error {
-	_, err := s.db.Del(context.Background(), key).Result()
+func (s *redi) Del(key ...string) error {
+	_, err := s.db.Del(context.Background(), key...).Result()
 	if err != nil {
 		return err
 	}
