@@ -6,10 +6,10 @@ import (
 
 	model "github.com/emadghaffari/api-teacher/model/course"
 	service "github.com/emadghaffari/api-teacher/service/course"
+	"github.com/emadghaffari/api-teacher/utils/helper"
 	"github.com/emadghaffari/api-teacher/utils/random"
 	"github.com/spf13/viper"
 
-	"github.com/emadghaffari/res_errors/errors"
 	"github.com/gin-gonic/gin"
 )
 
@@ -44,7 +44,7 @@ func (u *course) Index(c *gin.Context) {
 func (u *course) Store(c *gin.Context) {
 	cs := model.Course{}
 
-	if err := u.bind(c, &cs); err != nil {
+	if err := helper.Bind(c, &cs); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
@@ -69,7 +69,7 @@ func (u *course) Store(c *gin.Context) {
 func (u *course) Update(c *gin.Context) {
 	cs := model.Course{}
 
-	if err := u.bind(c, &cs); err != nil {
+	if err := helper.Bind(c, &cs); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
@@ -92,7 +92,7 @@ func (u *course) Update(c *gin.Context) {
 func (u *course) Take(c *gin.Context) {
 	cs := model.Course{}
 
-	if err := u.bind(c, &cs); err != nil {
+	if err := helper.Bind(c, &cs); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
@@ -112,13 +112,4 @@ func (u *course) Take(c *gin.Context) {
 		"identitiy": cs.Identitiy,
 		"message":   "You have successfully registered for the course",
 	}})
-}
-
-func (u *course) bind(c *gin.Context, cs *model.Course) errors.ResError {
-	// Bind the request.Body to user
-	if err := c.ShouldBindJSON(&cs); err != nil {
-		return errors.HandlerBadRequest("Invalid JSON Body.")
-
-	}
-	return nil
 }

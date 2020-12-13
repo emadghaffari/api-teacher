@@ -7,8 +7,8 @@ import (
 	model "github.com/emadghaffari/api-teacher/model/user"
 	service "github.com/emadghaffari/api-teacher/service/user"
 	cryptoutils "github.com/emadghaffari/api-teacher/utils/cryptoUtils"
+	"github.com/emadghaffari/api-teacher/utils/helper"
 	"github.com/emadghaffari/api-teacher/utils/random"
-	"github.com/emadghaffari/res_errors/errors"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
 )
@@ -31,9 +31,8 @@ func (u *user) Login(c *gin.Context) {
 	us := model.User{}
 
 	// Bind the request.Body to user
-	if err := c.ShouldBindJSON(&us); err != nil {
-		resErr := errors.HandlerBadRequest("Invalid JSON Body.")
-		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+	if err := helper.Bind(c, &us); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
 
@@ -64,9 +63,8 @@ func (u *user) Register(c *gin.Context) {
 	us := model.User{}
 
 	// Bind the request.Body to user
-	if err := c.ShouldBindJSON(&us); err != nil {
-		resErr := errors.HandlerBadRequest("Invalid JSON Body.")
-		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+	if err := helper.Bind(c, &us); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
 
