@@ -1,7 +1,6 @@
 package random
 
 import (
-	"fmt"
 	"math/rand"
 	"time"
 )
@@ -9,7 +8,6 @@ import (
 // Slice random Slice of numbers
 func Slice(num, min, max int) []int {
 	if min > max {
-		fmt.Println("Error min and max")
 		return nil
 	}
 	rand.Seed(time.Now().UnixNano())
@@ -24,7 +22,6 @@ func Slice(num, min, max int) []int {
 // Rand between numbers
 func Rand(min, max int) int {
 	if min > max {
-		fmt.Println("Error min and max")
 		return 0
 	}
 	rand.Seed(time.Now().UnixNano())
