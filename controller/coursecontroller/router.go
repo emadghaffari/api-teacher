@@ -44,10 +44,8 @@ func (u *course) Index(c *gin.Context) {
 func (u *course) Store(c *gin.Context) {
 	cs := model.Course{}
 
-	// Bind the request.Body to user
-	if err := c.ShouldBindJSON(&cs); err != nil {
-		resErr := errors.HandlerBadRequest("Invalid JSON Body.")
-		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
+	if err := u.bind(c, &cs); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
 
@@ -69,10 +67,37 @@ func (u *course) Store(c *gin.Context) {
 
 // Store new course
 func (u *course) Update(c *gin.Context) {
+	cs := model.Course{}
 
+	if err := u.bind(c, &cs); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	if err := cs.UpdateValidate(); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	// create a new Course
+	if err := service.Service.Update(&cs); err != nil {
+		c.JSON(err.Status(), gin.H{"error": err.Message()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"data": cs})
 }
 
 // take a course
 func (u *course) Take(c *gin.Context) {
 
+}
+
+func (u *course) bind(c *gin.Context, cs *model.Course) errors.ResError {
+	// Bind the request.Body to user
+	if err := c.ShouldBindJSON(&cs); err != nil {
+		return errors.HandlerBadRequest("Invalid JSON Body.")
+
+	}
+	return nil
 }
