@@ -11,6 +11,7 @@ import (
 	"github.com/emadghaffari/api-teacher/model/user"
 	"github.com/emadghaffari/api-teacher/utils/date"
 	"github.com/emadghaffari/api-teacher/utils/hash"
+	"github.com/emadghaffari/api-teacher/utils/random"
 )
 
 type seed struct {
@@ -47,12 +48,12 @@ var (
 		"Diploma in Food and Beverage Services",
 	}
 	times = []string{
-		"2 months - 1 year",
-		"1 year	",
-		"1 - 1.5 year",
-		"1 year",
-		"3 years",
-		"2 - 6 months",
+		"class 505 Mondays",
+		"class 303 Wednesdays",
+		"class 100 Saturdays",
+		"class 303 Thursdays",
+		"class 919 Mondays",
+		"class 303 Mondays",
 	}
 )
 
@@ -174,7 +175,7 @@ func (s *seed) Courses() {
 	rand.Seed(time.Now().UnixNano())
 	db := postgres.DB.GetDB()
 	db.QueryRow("TRUNCATE TABLE courses RESTART IDENTITY CASCADE;")
-	sqlStr := "INSERT INTO courses (user_id, name, identitiy, valence, time, created_at) VALUES"
+	sqlStr := "INSERT INTO courses (user_id, name, identitiy, valence, value, start_at, end_at, description , created_at) VALUES"
 	counter := 50
 	for i := 0; i < counter; i++ {
 		user := s.users[rand.Intn(len(s.users))]
@@ -182,11 +183,14 @@ func (s *seed) Courses() {
 			userID := user.ID
 			name := courses[rand.Intn(len(courses))]
 			valence := rand.Int63n(20) + 20
-			time := times[rand.Intn(len(times))]
+			description := times[rand.Intn(len(times))]
+			value := random.Rand(1, 4)
+			start := time.Now().UTC().Format("15:04:05.000")
+			end := time.Now().Add(time.Hour * 3).UTC().Format("15:04:05.000")
 			identitiy := rand.Int63n(5000000000000) + 5000000000000
 			createdAt := date.GetNowString()
 
-			sqlStr += fmt.Sprintf("('%d','%s','%d','%d', '%s', '%s'),", userID, name, identitiy, valence, time, createdAt)
+			sqlStr += fmt.Sprintf("('%d','%s','%d','%d','%d','%s','%s', '%s', '%s'),", userID, name, identitiy, valence, value, start, end, description, createdAt)
 		} else {
 			counter++
 		}
