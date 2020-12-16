@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	// pq lib
 	_ "github.com/lib/pq"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -20,6 +21,7 @@ var (
 type iredis interface {
 	New()
 	GetDB() *sql.DB
+	SetDB(*sql.DB)
 }
 
 type sredis struct {
@@ -58,4 +60,8 @@ func (s *sredis) New() {
 
 func (s *sredis) GetDB() *sql.DB {
 	return s.db
+}
+
+func (s *sredis) SetDB(db *sql.DB) {
+	s.db = db
 }
