@@ -26,16 +26,28 @@ type usServiceMock struct {
 	MockFuc func() (*token.TokenDetails, errors.ResError)
 }
 
-func (usr *usServiceMock) Login(us model.User) (*token.TokenDetails, errors.ResError) {
+func (usr *usServiceMock) Login() (*token.TokenDetails, errors.ResError) {
 	return usr.MockFuc()
 }
 
-func (usr *usServiceMock) Register(us model.User) (*token.TokenDetails, errors.ResError) {
+func (usr *usServiceMock) Register() (*token.TokenDetails, errors.ResError) {
 	return usr.MockFuc()
 }
+
+type usModelMock struct {
+	MockFuc func() errors.ResError
+}
+
+func (usr *usModelMock) Register() errors.ResError         { return nil }
+func (usr *usModelMock) Login() errors.ResError            { return nil }
+func (usr *usModelMock) Set(*model.User)                   {}
+func (usr *usModelMock) Get() *model.User                  { return nil }
+func (usr *usModelMock) RegisterValidate() errors.ResError { return usr.MockFuc() }
+func (usr *usModelMock) LoginValidate() errors.ResError    { return usr.MockFuc() }
 
 func TestLogin(t *testing.T) {
 	mocked := usServiceMock{}
+	modelMocked := usModelMock{}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
@@ -98,6 +110,8 @@ func TestLogin(t *testing.T) {
 			mocked.MockFuc = tc.mock
 			service.Service = &mocked
 
+			model.Model = &modelMocked
+
 			// Mock HTTP Request and it's return
 			c.Request, _ = http.NewRequest("POST", "/login", strings.NewReader(string(tc.params)))
 			c.Request.Header.Add("Content-Type", gin.MIMEJSON)
@@ -140,21 +154,24 @@ func TestLogin(t *testing.T) {
 
 func TestRegister(t *testing.T) {
 	mocked := usServiceMock{}
+	modelMocked := usModelMock{}
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
 
 	tests := []struct {
-		step   string
-		status int
-		error  string
-		params string
-		mock   func() (*token.TokenDetails, errors.ResError)
+		step       string
+		status     int
+		error      string
+		params     string
+		mock       func() (*token.TokenDetails, errors.ResError)
+		Validation func() errors.ResError
 	}{
 		{
-			step:   "a",
-			status: http.StatusOK,
-			error:  "",
-			params: `{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`,
+			step:       "a",
+			status:     http.StatusOK,
+			error:      "",
+			params:     `{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`,
+			Validation: func() errors.ResError { return nil },
 			mock: func() (*token.TokenDetails, errors.ResError) {
 				return &token.TokenDetails{
 					AccessToken:  "access",
@@ -163,10 +180,11 @@ func TestRegister(t *testing.T) {
 			},
 		},
 		{
-			step:   "b",
-			status: http.StatusBadRequest,
-			error:  "Invalid JSON Body.",
-			params: ``,
+			step:       "b",
+			status:     http.StatusBadRequest,
+			error:      "Invalid JSON Body.",
+			params:     ``,
+			Validation: func() errors.ResError { return nil },
 			mock: func() (*token.TokenDetails, errors.ResError) {
 				return &token.TokenDetails{
 					AccessToken:  "access",
@@ -175,10 +193,11 @@ func TestRegister(t *testing.T) {
 			},
 		},
 		{
-			step:   "c",
-			status: http.StatusBadRequest,
-			error:  "Role is Empty.",
-			params: `{"password": "123456798","name":"emad","lname":"ghaffari"}`,
+			step:       "c",
+			status:     http.StatusBadRequest,
+			error:      "Role is Empty",
+			Validation: func() errors.ResError { return errors.HandlerBadRequest("Role is Empty.") },
+			params:     `{"password": "123456798","name":"emad","lname":"ghaffari"}`,
 			mock: func() (*token.TokenDetails, errors.ResError) {
 				return &token.TokenDetails{
 					AccessToken:  "access",
@@ -187,10 +206,11 @@ func TestRegister(t *testing.T) {
 			},
 		},
 		{
-			step:   "d",
-			status: http.StatusInternalServerError,
-			error:  "Internal Test Error",
-			params: `{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`,
+			step:       "d",
+			status:     http.StatusInternalServerError,
+			error:      "Internal Test Error",
+			params:     `{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`,
+			Validation: func() errors.ResError { return nil },
 			mock: func() (*token.TokenDetails, errors.ResError) {
 				return nil, errors.HandlerInternalServerError("Internal Test Error", nil)
 			},
@@ -201,6 +221,9 @@ func TestRegister(t *testing.T) {
 		t.Run(tc.step, func(t *testing.T) {
 			mocked.MockFuc = tc.mock
 			service.Service = &mocked
+
+			modelMocked.MockFuc = tc.Validation
+			model.Model = &modelMocked
 
 			// Mock HTTP Request and it's return
 			c.Request, _ = http.NewRequest("POST", "/register", strings.NewReader(string(tc.params)))
@@ -242,52 +265,52 @@ func TestRegister(t *testing.T) {
 
 }
 
-func ExampleRouter_Login() {
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
+// func ExampleRouter_Login() {
+// 	w := httptest.NewRecorder()
+// 	c, _ := gin.CreateTestContext(w)
 
-	mocked := usServiceMock{}
-	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
-		return &token.TokenDetails{
-			AccessToken:  "access",
-			RefreshToken: "refresh",
-		}, nil
-	}
+// 	mocked := usServiceMock{}
+// 	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
+// 		return &token.TokenDetails{
+// 			AccessToken:  "access",
+// 			RefreshToken: "refresh",
+// 		}, nil
+// 	}
 
-	service.Service = &mocked
+// 	service.Service = &mocked
 
-	// Mock HTTP Request and it's return
-	c.Request, _ = http.NewRequest("POST", "/login", strings.NewReader(string(`{"identitiy":"identitiy","password":"identitiy"}`)))
-	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
+// 	// Mock HTTP Request and it's return
+// 	c.Request, _ = http.NewRequest("POST", "/login", strings.NewReader(string(`{"identitiy":"identitiy","password":"identitiy"}`)))
+// 	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
 
-	// call login func
-	Router.Login(c)
+// 	// call login func
+// 	Router.Login(c)
 
-	fmt.Println(w.Body.String())
-	// Output: {"access_token":"access","refresh_token":"refresh"}
-}
+// 	fmt.Println(w.Body.String())
+// 	// Output: {"access_token":"access","refresh_token":"refresh"}
+// }
 
-func ExampleRouter_Register() {
-	w := httptest.NewRecorder()
-	c, _ := gin.CreateTestContext(w)
+// func ExampleRouter_Register() {
+// 	w := httptest.NewRecorder()
+// 	c, _ := gin.CreateTestContext(w)
 
-	mocked := usServiceMock{}
-	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
-		return &token.TokenDetails{
-			AccessToken:  "access",
-			RefreshToken: "refresh",
-		}, nil
-	}
+// 	mocked := usServiceMock{}
+// 	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
+// 		return &token.TokenDetails{
+// 			AccessToken:  "access",
+// 			RefreshToken: "refresh",
+// 		}, nil
+// 	}
 
-	service.Service = &mocked
+// 	service.Service = &mocked
 
-	// Mock HTTP Request and it's return
-	c.Request, _ = http.NewRequest("POST", "/register", strings.NewReader(string(`{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`)))
-	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
+// 	// Mock HTTP Request and it's return
+// 	c.Request, _ = http.NewRequest("POST", "/register", strings.NewReader(string(`{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`)))
+// 	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
 
-	// call login func
-	Router.Register(c)
+// 	// call login func
+// 	Router.Register(c)
 
-	fmt.Println(w.Body.String())
-	// Output: {"access_token":"access","refresh_token":"refresh"}
-}
+// 	fmt.Println(w.Body.String())
+// 	// Output: {"access_token":"access","refresh_token":"refresh"}
+// }

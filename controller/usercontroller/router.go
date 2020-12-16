@@ -46,7 +46,8 @@ func (u *user) Login(c *gin.Context) {
 	us.Password = cryptoutils.GetMD5(us.Password)
 
 	// Login
-	ts, resErr := service.Service.Login(us)
+	model.Model.Set(&us)
+	ts, resErr := service.Service.Login()
 	if resErr != nil {
 		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
 		return
@@ -67,19 +68,20 @@ func (u *user) Register(c *gin.Context) {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
+	us.Password = cryptoutils.GetMD5(us.Password)
+	us.Identitiy = fmt.Sprintf("%d", random.Rand(viper.GetInt("user.MinIdentitiy"), viper.GetInt("user.MaxIdentitiy")))
+
+	model.Model.Set(&us)
 
 	// validate user for Register
-	resErr := us.RegisterValidate()
+	resErr := model.Model.RegisterValidate()
 	if resErr != nil {
 		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
 		return
 	}
 
-	us.Password = cryptoutils.GetMD5(us.Password)
-	us.Identitiy = fmt.Sprintf("%d", random.Rand(viper.GetInt("user.MinIdentitiy"), viper.GetInt("user.MaxIdentitiy")))
-
 	// create a new User
-	ts, resErr := service.Service.Register(us)
+	ts, resErr := service.Service.Register()
 	if resErr != nil {
 		c.JSON(resErr.Status(), gin.H{"error": resErr.Message()})
 		return
