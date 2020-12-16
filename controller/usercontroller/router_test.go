@@ -265,52 +265,56 @@ func TestRegister(t *testing.T) {
 
 }
 
-// func ExampleRouter_Login() {
-// 	w := httptest.NewRecorder()
-// 	c, _ := gin.CreateTestContext(w)
+func ExampleRouter_Login() {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
 
-// 	mocked := usServiceMock{}
-// 	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
-// 		return &token.TokenDetails{
-// 			AccessToken:  "access",
-// 			RefreshToken: "refresh",
-// 		}, nil
-// 	}
+	mocked := usServiceMock{}
+	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
+		return &token.TokenDetails{
+			AccessToken:  "access",
+			RefreshToken: "refresh",
+		}, nil
+	}
 
-// 	service.Service = &mocked
+	service.Service = &mocked
 
-// 	// Mock HTTP Request and it's return
-// 	c.Request, _ = http.NewRequest("POST", "/login", strings.NewReader(string(`{"identitiy":"identitiy","password":"identitiy"}`)))
-// 	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
+	// Mock HTTP Request and it's return
+	c.Request, _ = http.NewRequest("POST", "/login", strings.NewReader(string(`{"identitiy":"identitiy","password":"identitiy"}`)))
+	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
 
-// 	// call login func
-// 	Router.Login(c)
+	// call login func
+	Router.Login(c)
 
-// 	fmt.Println(w.Body.String())
-// 	// Output: {"access_token":"access","refresh_token":"refresh"}
-// }
+	fmt.Println(w.Body.String())
+	// Output: {"access_token":"access","refresh_token":"refresh"}
+}
 
-// func ExampleRouter_Register() {
-// 	w := httptest.NewRecorder()
-// 	c, _ := gin.CreateTestContext(w)
+func ExampleRouter_Register() {
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
 
-// 	mocked := usServiceMock{}
-// 	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
-// 		return &token.TokenDetails{
-// 			AccessToken:  "access",
-// 			RefreshToken: "refresh",
-// 		}, nil
-// 	}
+	mocked := usServiceMock{}
+	mocked.MockFuc = func() (*token.TokenDetails, errors.ResError) {
+		return &token.TokenDetails{
+			AccessToken:  "access",
+			RefreshToken: "refresh",
+		}, nil
+	}
 
-// 	service.Service = &mocked
+	modelMocked := usModelMock{}
+	modelMocked.MockFuc = func() errors.ResError { return nil }
+	model.Model = &modelMocked
 
-// 	// Mock HTTP Request and it's return
-// 	c.Request, _ = http.NewRequest("POST", "/register", strings.NewReader(string(`{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`)))
-// 	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
+	service.Service = &mocked
 
-// 	// call login func
-// 	Router.Register(c)
+	// Mock HTTP Request and it's return
+	c.Request, _ = http.NewRequest("POST", "/register", strings.NewReader(string(`{"password": "123456798","name":"emad","lname":"ghaffari","role": {"name": "student"}}`)))
+	c.Request.Header.Add("Content-Type", gin.MIMEJSON)
 
-// 	fmt.Println(w.Body.String())
-// 	// Output: {"access_token":"access","refresh_token":"refresh"}
-// }
+	// call login func
+	Router.Register(c)
+
+	fmt.Println(w.Body.String())
+	// Output: {"access_token":"access","refresh_token":"refresh"}
+}
