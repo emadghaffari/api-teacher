@@ -17,6 +17,8 @@ type user interface {
 	Login() errors.ResError
 	Set(*User)
 	Get() *User
+	RegisterValidate() errors.ResError
+	LoginValidate() errors.ResError
 }
 
 // User struct
@@ -41,9 +43,18 @@ func (us *User) RegisterValidate() errors.ResError {
 	if us.Password == "" {
 		return errors.HandlerBadRequest("Password is Empty.")
 	}
-	if us.Role.Name == "" {
+
+	if us.Role == nil {
 		return errors.HandlerBadRequest("Role is Empty.")
 	}
+
+	rl := role.Role{Name: us.Role.Name}
+	rl.Name = strings.TrimSpace(rl.Name)
+	if err := rl.GetByName(); err != nil {
+		return err
+	}
+	role.Model.Set(&rl)
+
 	return nil
 }
 
