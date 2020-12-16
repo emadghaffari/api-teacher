@@ -3,6 +3,7 @@ module github.com/emadghaffari/api-teacher
 go 1.15
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/Masterminds/squirrel v1.5.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/emadghaffari/res_errors v0.0.0-20201020135514-1b9d3f287aa0
