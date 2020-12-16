@@ -89,7 +89,10 @@ func (r *Role) Assign(id int64) errors.ResError {
 		}
 
 		if err := tx.QueryRow(query, args...).Err(); err != nil {
-			log.Error(fmt.Sprintf("Error in user_roles QueryRow: %s", err))
+			log.WithFields(log.Fields{
+				"user_id": id,
+				"role_id": r.ID,
+			}).Error(fmt.Sprintf("Faild Assign Role To User: %s", err))
 			return errors.HandlerInternalServerError(err.Error(), err)
 		}
 		tx.Commit()
