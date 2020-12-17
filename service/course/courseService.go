@@ -17,9 +17,9 @@ var (
 
 type courses interface {
 	Index() (model.Courses, errors.ResError)
-	Store(item *model.Course) errors.ResError
-	Update(item *model.Course) errors.ResError
-	Take(item *model.Course) errors.ResError
+	Store() errors.ResError
+	Update() errors.ResError
+	Take() errors.ResError
 }
 
 type course struct{}
@@ -36,9 +36,9 @@ func (cs *course) Index() (items model.Courses, err errors.ResError) {
 	return items, nil
 }
 
-func (cs *course) Store(item *model.Course) errors.ResError {
+func (cs *course) Store() errors.ResError {
 
-	if err := item.Store(); err != nil {
+	if err := model.Model.Store(); err != nil {
 		return err
 	}
 
@@ -46,9 +46,9 @@ func (cs *course) Store(item *model.Course) errors.ResError {
 	return nil
 }
 
-func (cs *course) Update(item *model.Course) errors.ResError {
+func (cs *course) Update() errors.ResError {
 
-	if err := item.Update(); err != nil {
+	if err := model.Model.Update(); err != nil {
 		return err
 	}
 
@@ -56,12 +56,12 @@ func (cs *course) Update(item *model.Course) errors.ResError {
 	return nil
 }
 
-func (cs *course) Take(item *model.Course) errors.ResError {
+func (cs *course) Take() errors.ResError {
 
-	if err := item.Take(); err != nil {
+	if err := model.Model.Take(); err != nil {
 		return err
 	}
 
-	redis.DB.Del(fmt.Sprintf("user-courses-%d", user.Model.Get().ID), fmt.Sprintf("teacher-courses-%d", item.Teacher.ID))
+	redis.DB.Del(fmt.Sprintf("user-courses-%d", user.Model.Get().ID), fmt.Sprintf("teacher-courses-%d", model.Model.Get().Teacher.ID))
 	return nil
 }
