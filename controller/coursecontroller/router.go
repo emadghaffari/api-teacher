@@ -49,15 +49,18 @@ func (u *course) Store(c *gin.Context) {
 		return
 	}
 
+	cs.Identitiy = fmt.Sprintf("%d", random.Rand(viper.GetInt("course.MinIdentitiy"), viper.GetInt("course.MaxIdentitiy")))
+
+	// Set course
+	model.Model.Set(&cs)
+
 	if err := cs.StoreValidate(); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
 
-	cs.Identitiy = fmt.Sprintf("%d", random.Rand(viper.GetInt("course.MinIdentitiy"), viper.GetInt("course.MaxIdentitiy")))
-
 	// create a new Course
-	if err := service.Service.Store(&cs); err != nil {
+	if err := service.Service.Store(); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
@@ -74,13 +77,15 @@ func (u *course) Update(c *gin.Context) {
 		return
 	}
 
-	if err := cs.UpdateValidate(); err != nil {
+	// Set course
+	model.Model.Set(&cs)
+	if err := model.Model.UpdateValidate(); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
 
 	// create a new Course
-	if err := service.Service.Update(&cs); err != nil {
+	if err := service.Service.Update(); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
@@ -97,13 +102,16 @@ func (u *course) Take(c *gin.Context) {
 		return
 	}
 
-	if err := cs.TakeValidate(); err != nil {
+	// Set course
+	model.Model.Set(&cs)
+
+	if err := model.Model.TakeValidate(); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
 
 	// create a new Course
-	if err := service.Service.Take(&cs); err != nil {
+	if err := service.Service.Take(); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}

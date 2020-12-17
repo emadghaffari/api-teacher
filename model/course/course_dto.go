@@ -15,6 +15,14 @@ var (
 
 type course interface {
 	Index() (Courses, errors.ResError)
+	Store() errors.ResError
+	Update() errors.ResError
+	Take() errors.ResError
+	StoreValidate() errors.ResError
+	UpdateValidate() errors.ResError
+	TakeValidate() errors.ResError
+	Set(u *Course)
+	Get() *Course
 }
 
 // Course struct
@@ -94,4 +102,14 @@ func (cs *Course) TakeValidate() errors.ResError {
 		return errors.HandlerBadRequest("Invalid Course Identitiy")
 	}
 	return nil
+}
+
+// Set user
+func (cs *Course) Set(u *Course) {
+	*cs = *u
+}
+
+// Get Course
+func (cs *Course) Get() *Course {
+	return cs
 }
