@@ -20,7 +20,7 @@ type token struct{}
 func (t *token) Generate(u model.User) (*jst.TokenDetails, errors.ResError) {
 	ts, err := jst.Conf.Generate(u)
 	if err != nil {
-		return nil, errors.HandlerInternalServerError("Error in Generate Token: %s", err)
+		return nil, errors.HandlerInternalServerError("Error in Generate Token", err)
 	}
 
 	return ts, nil
