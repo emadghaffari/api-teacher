@@ -54,7 +54,7 @@ func (u *course) Store(c *gin.Context) {
 	// Set course
 	model.Model.Set(&cs)
 
-	if err := cs.StoreValidate(); err != nil {
+	if err := model.Model.StoreValidate(); err != nil {
 		c.JSON(err.Status(), gin.H{"error": err.Message()})
 		return
 	}
