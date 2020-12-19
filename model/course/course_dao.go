@@ -72,6 +72,8 @@ func (u *Course) Store() errors.ResError {
 func (u *Course) Update() errors.ResError {
 	db := postgres.DB.GetDB()
 
+	fmt.Println(u)
+	fmt.Println(user.Model.Get())
 	err := db.QueryRow(updateQuery, u.Name, u.Valence, u.Value, u.Start, u.End, u.Description, u.Identitiy, user.Model.Get().ID).Err()
 	if err != nil {
 		log.Error(fmt.Sprintf("Error in update course: %s", err))

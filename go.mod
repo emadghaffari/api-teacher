@@ -3,9 +3,11 @@ module github.com/emadghaffari/api-teacher
 go 1.15
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.0
+	github.com/DATA-DOG/go-sqlmock v1.5.0 // indirect
 	github.com/Masterminds/squirrel v1.5.0
+	github.com/alicebob/miniredis v2.5.0+incompatible
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/elliotchance/redismock/v8 v8.5.4
 	github.com/emadghaffari/res_errors v0.0.0-20201020135514-1b9d3f287aa0
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-pg/pg/v10 v10.7.3 // indirect

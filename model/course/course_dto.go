@@ -87,6 +87,9 @@ func (cs *Course) UpdateValidate() errors.ResError {
 	if cs.Valence <= 1 {
 		return errors.HandlerBadRequest("invalid Course Valence")
 	}
+	if cs.Value <= 1 {
+		return errors.HandlerBadRequest("invalid Course Value")
+	}
 	return nil
 }
 
