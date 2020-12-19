@@ -31,7 +31,11 @@ func TestSlice(t *testing.T) {
 		t.Run(tc.step, func(t *testing.T) {
 
 			rn := Slice(tc.len, tc.min, tc.max)
-			assert.Equal(t, tc.len, len(rn))
+			if tc.min < tc.max {
+				assert.Equal(t, tc.len, len(rn))
+			} else {
+				assert.Equal(t, 0, len(rn))
+			}
 		})
 	}
 }
